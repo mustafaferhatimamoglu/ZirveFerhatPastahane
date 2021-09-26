@@ -1,0 +1,573 @@
+﻿@page
+@model ZirveFerhatPastahane.Pages.B2B_4Model
+@{
+}
+@{
+    var sql = "select DISTINCT(ITEMS1.LOGICALREF),ITEMS1.CODE,ITEMS1.[NAME]--,ITEMS1.SPECODE,ITEMS3.LOGICALREF as item3lref,ITEMS3.NAME as item3name \n" +
+        ",(select DEFINITION_ from " + Request.Cookies["S_ANA"] + "_SPECODES where " + Request.Cookies["S_ANA"] + "_SPECODES.SPECODE=ITEMS1.SPECODE and SPETYP1 = 1) as SPECODEname \n" +
+        "from " + Request.Cookies["S_ANA"] + "_ITEMS as ITEMS1 ," + Request.Cookies["S_ANA"] + "_ITMUNITA as ITEMS2 , " + Request.Cookies["S_ANA"] + "_UNITSETL as ITEMS3 \n" +
+        " where " +
+        //" ITEMS1.NAME != '' " + Request.Cookies["L_SQL"].Replace("*~", " ") + " and \n" +
+        "  ITEMS1.LOGICALREF = ITEMS2.ITEMREF and ITEMS2.UNITLINEREF  = ITEMS3.LOGICALREF";
+    var sql_cevap = Islemler.DB_op.Instance.selectToTiger_DT(sql);
+    //var sql_cevap = Islemler.DB_op.Instance.selectToTiger_DT(" select LOGICALREF,CODE,NAME,SPECODE,(select DEFINITION_ from LG_002_SPECODES where LG_002_SPECODES.SPECODE=LG_002_ITEMS.SPECODE and SPETYP1 = 1) as SPECODEname from " + Request.Cookies["S_ANA"] + "_ITEMS where NAME != '' " + Request.Cookies["L_SQL"].Replace("*~", " "));
+}
+
+
+
+<script>
+    function setCookie(cname, cvalue, exdays) {
+        const d = new Date();
+        d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+        let expires = "expires=" + d.toGMTString();
+        document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+    }
+
+    function getCookie(cname) {
+        let name = cname + "=";
+        let decodedCookie = decodeURIComponent(document.cookie);
+        let ca = decodedCookie.split(';');
+        for (let i = 0; i < ca.length; i++) {
+            let c = ca[i];
+            while (c.charAt(0) == ' ') {
+                c = c.substring(1);
+            }
+            if (c.indexOf(name) == 0) {
+                return c.substring(name.length, c.length);
+            }
+        }
+        return "";
+    }
+    setCookie("sayac", "1", 5);
+</script>
+
+<!-- The Modal -->
+<div id="myModal" class="modal">
+
+    <!-- Modal content -->
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Stok Rehber</h2>
+            <span class="close">&times;</span>
+        </div>
+        <div class="modal-body">
+            @*<p>Some text in the Modal Body</p>
+                <p>Some other text...</p>*@
+            <input type="text" id="search" placeholder="Ara">
+            <table id="table" class="table table-bordered table-hover table-responsive table-striped" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Name</th>
+                        @*<th>Birim</th>
+                            <th>Speccodename</th>*@
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < sql_cevap.Rows.Count; i++)
+                    {
+                        //<option value='@sql_cevap.Rows[i]["NAME"]' data-value='@sql_cevap.Rows[i]["LOGICALREF"]'></option>
+                        <tr onclick="KalemSecNokta('@sql_cevap.Rows[i]["NAME"]')">
+                            <td>@sql_cevap.Rows[i]["CODE"]</td>
+                            <td>@sql_cevap.Rows[i]["NAME"]</td>
+                            @*<td>@sql_cevap.Rows[i]["item3name"]</td>*@
+                            @*<td>@sql_cevap.Rows[i]["SPECODEname"]</td>*@
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th>Code</th>
+                        <th>Name</th>
+                        @*<th>Birim</th>
+                            <th>Speccodename</th>*@
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+
+@* Butonun içine ... koyma *@
+<style>
+    .input-container {
+        /*width: 250px;*/
+        border: 1px solid #a9a9a9;
+        display: inline-block;
+    }
+
+        .input-container input:focus, .input-container input:active {
+            outline: none;
+        }
+
+        .input-container input {
+            /*width: 90%;*/
+            border: none;
+        }
+
+        .input-container button {
+            float: right;
+        }
+</style>
+
+@* Modal oluşturma *@
+<style>
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    /* The Modal (background) */
+    .modal {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        padding-top: 100px; /* Location of the box */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgb(0,0,0); /* Fallback color */
+        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    }
+
+    /* Modal Content */
+    .modal-content {
+        position: relative;
+        background-color: #fefefe;
+        margin: auto;
+        padding: 0;
+        border: 1px solid #888;
+        width: 80%;
+        box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+        -webkit-animation-name: animatetop;
+        -webkit-animation-duration: 0.4s;
+        animation-name: animatetop;
+        animation-duration: 0.4s
+    }
+
+    /* Add Animation */
+    @@-webkit-keyframes animatetop {
+        from {
+            top: -300px;
+            opacity: 0
+        }
+
+        to {
+            top: 0;
+            opacity: 1
+        }
+    }
+
+    @@keyframes animatetop {
+        from {
+            top: -300px;
+            opacity: 0
+        }
+
+        to {
+            top: 0;
+            opacity: 1
+        }
+    }
+
+    /* The Close Button */
+    .close {
+        color: white;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+    .modal-header {
+        padding: 2px 16px;
+        background-color: #5cb85c;
+        color: white;
+    }
+
+    .modal-body {
+        padding: 2px 16px;
+    }
+</style>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    var $rows = $('#table tr');
+    $('#search').keyup(function () {
+        var val = $.trim($(this).val()).replace(/ +/g, ' ').toLowerCase();
+
+        $rows.show().filter(function () {
+            var text = $(this).text().replace(/\s+/g, ' ').toLowerCase();
+            if (text.includes('code name')) { return; }
+            return !~text.indexOf(val);
+        }).hide();
+    });
+</script>
+
+
+<div id="add_to_me"></div>
+
+@*<button id="ekle" onclick="SatirEkle()">satır ekle</button>*@
+
+<script>
+    function OnDataManule() {
+        alert("seçimleri rehberden yapın");
+    }
+</script>
+<button onclick="SiparisTamamla()">Siparişi Tamamla</button>
+<script>
+    function SiparisTamamla() {
+        //alert("tamamlanıyor..");
+        var sayac = parseInt(getCookie("sayac"));
+        var mycars = new Array();
+        var UrunId = "";
+        var UrunMik = 0;
+        var UrunBirim = "";
+
+        var HataBit = 0;
+
+        var gelen = "";
+        for (var i = 1; i < sayac - 1; i++) {
+            try {
+                //mycars[i]=
+                var a1 = 'urunseciminp_' + i.toString() + '';
+                var a2 = 'miktar_' + i.toString() + '';
+                var a3 = 'p2_' + i.toString() + '';
+
+                //alert(a1);
+                var x1 = document.getElementById('urunseciminp_' + i.toString() + '').value;
+                if (x1 == null || x1 == "" || x1 == " ") {
+                    alert(i.toString() + " Satırda Ürün hatası (Ürün)");
+                    HataBit = 1;
+                    break;
+                }
+                var x2 = document.getElementById('miktar_' + i.toString() + '').value;
+                if (x2 == null || x2 == "" || x2 == " ") {
+                    alert(i.toString() + " Satırda Ürün hatası (miktar_)");
+                    HataBit = 1;
+                    break;
+                }
+                var x3 = document.getElementById('p2_' + i.toString() + '').value;
+                if (x3 == null || x3 == "" || x3 == " ") {
+                    alert(i.toString() + " Satırda Ürün hatası (Birim)");
+                    HataBit = 1;
+                    break;
+                }
+                //-------------------------------------------------------------------
+                ///////////UrunId = x1;
+                var value = $('#urunseciminp_' + i.toString() + '').val();
+                UrunId = $('#UrunSec_' + i.toString() + ' [value="' + value + '"]').data('value');
+                try {
+                    UrunMik = parseInt(x2);
+                } catch (e) {
+                    alert(i.toString() + " Satırda Ürün hatası (miktar)");
+                    HataBit = 1;
+                }
+                //UrunBirim = x3;
+                var valueBirim = $('#p2_' + i.toString() + '').val();
+                UrunBirim = $('#p1_' + i.toString() + ' [value="' + valueBirim + '"]').data('value');
+
+                //alert(UrunId + UrunMik.toString() + UrunBirim);
+                gelen += UrunId + "~~" + UrunMik.toString() + "~~" + UrunBirim + "-~-";
+
+
+                //-------------------------------------------------------------------
+                ////var UrunKodu = document.getElementById(a1).data('value');
+
+                ////alert(UrunKodu);
+                //alert(x1);
+
+
+                //var value = $('#urunseciminp_' + i.toString() + '').val();
+                //var ITEM_LREF = $('#UrunSec_' + i.toString() + ' [value="' + value + '"]').data('value');
+                ////var ITEM_LREF = $('#UrunSec                      [value="' + value + '"]').data('value');
+                ////alert(value);
+                //alert(ITEM_LREF);
+            } catch (error) {
+                console.error(error);
+                return;
+                // expected output: ReferenceError: nonExistentFunction is not defined
+                // Note - error messages will vary depending on browser
+            }
+
+        }
+        if (HataBit == 1) {
+            //alert("Hatabit var");
+            return;
+        }
+        $.ajax({
+            type: 'GET',
+            data: jQuery.param({ gelen: gelen }),
+            url: '?handler=ProjeOlustur',
+            success: function (data) {
+                window.location.href = data;
+                //var a1 = data.split("~~");
+                //var options = '';
+
+                //for (var i = 0; i < a1.length; i++) {
+                //    options += '<option value="' + a1[i].split("~~")[0] + '"  data-value="' + a1[i].split("~~")[1] + '"/>';
+                //}
+                //document.getElementById("p1_" + getCookie("clickednoktalar")).innerHTML = options;
+                //if (parseInt(getCookie("clickednoktalar")) + 1 == parseInt(getCookie("sayac"))) {
+                //    SatirEkle();
+                //}
+
+            },
+            error: function (error) {
+                alert("Error: " + error);
+            }
+        })
+
+    }
+</script>
+
+<script>
+    SatirEkle();
+    function SatirEkle() {
+        var sayac = parseInt(getCookie("sayac"));
+        setCookie("sayac", sayac+1, 5);
+            //alert("asd");
+            var Mtext1 =
+`
+<div class="input-container">
+    <input id="urunseciminp" list="UrunSec" onchange="OnDataManule();" disabled="disabled" ">
+    <datalist name="UrunSec" id="UrunSec" runat="server">
+
+
+        @for (int i = 0; i < sql_cevap.Rows.Count; i++)
+        {
+            <option value='@sql_cevap.Rows[i]["NAME"]' data-value='@sql_cevap.Rows[i]["LOGICALREF"]' ></option>
+        }
+
+    </datalist>
+    <button class="input-button" id="myBtn" onclick="UrunSecNokta()" >...</button>
+</div>
+
+<input id="miktar" name="miktar" type="text" placeholder="Miktar" />
+
+<input id="p2" list="p1" placeholder="Birim" onchange="OnUrunChanged();">
+    <datalist name="p1" id="p1" runat="server">
+
+    </datalist>
+<br>
+`;
+
+            Mtext1 = Mtext1.replace("urunseciminp", "urunseciminp_" + sayac);
+            Mtext1 = Mtext1.replace('"UrunSec"', '"UrunSec_' + sayac + '"');
+            Mtext1 = Mtext1.replace("OnUrunChanged", "OnUrunChanged_" + sayac);
+            Mtext1 = Mtext1.replace('"UrunSec"', '"UrunSec_' + sayac + '"');
+            Mtext1 = Mtext1.replace('"UrunSec"', '"UrunSec_' + sayac + '"');
+            Mtext1 = Mtext1.replace("myBtn", "myBtn_" + sayac);
+            Mtext1 = Mtext1.replace('"miktar"', '"miktar_' + sayac + '"');
+            Mtext1 = Mtext1.replace('"miktar"', '"miktar_' + sayac + '"');
+            Mtext1 = Mtext1.replace('"p2"', '"p2_' + sayac + '"');
+            Mtext1 = Mtext1.replace('"p1"', '"p1_' + sayac + '"');
+            Mtext1 = Mtext1.replace('"p1"', '"p1_' + sayac + '"');
+            Mtext1 = Mtext1.replace('"p1"', '"p1_' + sayac + '"');
+            $('#add_to_me').append(Mtext1);
+
+
+        var Mtext2 =
+            `
+function KalemSecNokta(gelen) {
+//alert(getCookie("clickednoktalar"));
+        modal.style.display = "none";
+        document.getElementById("urunseciminp_"+getCookie("clickednoktalar")).value = gelen;
+
+$.ajax({
+            type: 'GET',
+            data: jQuery.param({ KalemAd: gelen }),
+            url: '?handler=AdaGoreBul',
+            success: function (data) {
+                var a1 = data.split("-~-");
+var options = '';
+
+for (var i = 0; i < a1.length; i++) {
+  options += '<option value="' + a1[i].split("~~")[0] + '"  data-value="'+ a1[i].split("~~")[1] +'"/>';
+}
+document.getElementById("p1_"+getCookie("clickednoktalar")).innerHTML = options;
+if (parseInt(getCookie("clickednoktalar"))+1 == parseInt(getCookie("sayac"))) {
+    SatirEkle();
+}
+            },
+            error: function (error) {
+                alert("Error: " + error);
+            }
+        })
+    }
+`;
+
+        //Mtext2 = Mtext2.replace('"urunseciminp"', '"urunseciminp_' + sayac + '"');
+        //Mtext2 = Mtext2.replace('"p1"', '"p1_' + sayac + '"');
+        //Mtext2 = Mtext2.replace('"urunseciminp"', '"urunseciminp_' + sayac + '"');
+
+        //Mtext2 = Mtext2.replace('UrunSec ', 'UrunSec_' + sayac + ' ');
+        //Mtext2 = Mtext2.replace('UrunSec ', 'UrunSec_' + sayac + ' ');
+        //Mtext2 = Mtext2.replace('UrunSec ', 'UrunSec_' + sayac + ' ');
+        //Mtext2 = Mtext2.replace('UrunSec ', 'UrunSec_' + sayac + ' ');
+
+        var target = document.getElementById("add_to_me");
+        var newScript = document.createElement("script");
+
+        var inlineScript = document.createTextNode(Mtext2);
+        newScript.appendChild(inlineScript);
+        target.appendChild(newScript);
+
+
+
+        var Mtext3 =
+            `
+var modal = document.getElementById("myModal");
+    var btn = document.getElementById("myBtn");
+    var span = document.getElementsByClassName("close")[0];
+    btn.onclick = function () {
+        setCookie("clickednoktalar", "_clickednoktalar_", 5);
+        modal.style.display = "block";
+    }
+    span.onclick = function () {
+        modal.style.display = "none";
+    }
+    window.onclick = function (event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+`;
+        Mtext3 = Mtext3.replace("myBtn", "myBtn_" + sayac);
+        Mtext3 = Mtext3.replace("_clickednoktalar_", sayac);
+
+        var target = document.getElementById("add_to_me");
+        var newScript = document.createElement("script");
+
+        var inlineScript = document.createTextNode(Mtext3);
+        newScript.appendChild(inlineScript);
+        target.appendChild(newScript);
+
+
+//        var Mtext4 =
+//            `
+//function OnUrunChanged() {
+//        var value = $('#urunseciminp').val();
+//        document.cookie = "ITEM_BREF=" + $('#UrunSec [value="' + value + '"]').data('valueitem3lref');
+//        document.getElementById("p1").innerHTML = $('#UrunSec [value="' + value + '"]').data('valueitem3name');
+//    }
+//`;
+//        Mtext4 = Mtext4.replace('"OnUrunChanged"', '"OnUrunChanged' + sayac + '"');
+
+//        var target = document.getElementById("add_to_me");
+//        var newScript = document.createElement("script");
+
+//        var inlineScript = document.createTextNode(Mtext4);
+//        newScript.appendChild(inlineScript);
+//        target.appendChild(newScript);
+
+//        var Mtext5 =
+//            `
+
+//function UrunSecNokta() {
+//        alert("asddd");
+//    }
+//`;
+//        Mtext5 = Mtext5.replace("myBtn", "myBtn_" + sayac);
+
+//        var target = document.getElementById("add_to_me");
+//        var newScript = document.createElement("script");
+
+//        var inlineScript = document.createTextNode(Mtext5);
+//        newScript.appendChild(inlineScript);
+//        target.appendChild(newScript);
+
+       }
+</script>
+
+@{
+    var sql_mayali = "select DISTINCT(ITEMS1.LOGICALREF) , NAME \n" +
+        "from " + Request.Cookies["S_ANA"] + "_ITEMS as ITEMS1  where ITEMS1.NAME != '' and  \n" +
+        "ITEMS1.SPECODE ='MAYALI' \n";
+    var sql_cevap_mayali = Islemler.DB_op.Instance.selectToTiger_DT(sql_mayali);
+    //var sql_cevap = Islemler.DB_op.Instance.selectToTiger_DT(" select LOGICALREF,CODE,NAME,SPECODE,(select DEFINITION_ from LG_002_SPECODES where LG_002_SPECODES.SPECODE=LG_002_ITEMS.SPECODE and SPETYP1 = 1) as SPECODEname from " + Request.Cookies["S_ANA"] + "_ITEMS where NAME != '' " + Request.Cookies["L_SQL"].Replace("*~", " "));
+}
+<script>
+    @*var delayInMilliseconds = 1000; //1 second
+
+    setTimeout(function () {
+
+
+    var SayfaYukle_Text = "";
+    KalemSecNokta("NİĞDE GAZOZU");
+
+
+    var SayfaYukle_Text =
+`
+        @for (int i = 0; i < sql_cevap_mayali.Rows.Count; i++)
+        {
+            <option V='@sql_cevap_mayali.Rows[i]["NAME"]'></option>
+        }
+`;
+    for (var i = 0; i < @sql_cevap_mayali.Rows.Count-10; i++) {
+        //alert("asd");
+        SayfaYukle_Text = SayfaYukle_Text.replace("<option V=", "KalemSecNokta(");
+        SayfaYukle_Text = SayfaYukle_Text.replace("></option>", ");");
+    }
+    alert(SayfaYukle_Text);
+
+    var target = document.getElementById("add_to_me");
+    var newScript = document.createElement("script");
+
+    var inlineScript = document.createTextNode(SayfaYukle_Text);
+    newScript.appendChild(inlineScript);
+        target.appendChild(newScript);
+
+
+    }, delayInMilliseconds);*@
+
+
+    @*alert("B2b girildi ekran oluşturuluyor");
+    var SS_YUKLE = ` `;
+    var SS_sayi = @sql_cevap_mayali.Rows.Count;
+    alert(SS_sayi.toString());
+    for (var i = 0; i < SS_sayi; i++) {
+    }
+    setCookie("clickednoktalar", "1", 5);
+    SS_YUKLE += `KalemSecNokta('NİĞDE GAZOZU');`;
+    alert(SS_YUKLE);
+
+
+    var target = document.getElementById("add_to_me");
+    var newScript = document.createElement("script");
+
+    var inlineScript = document.createTextNode(SS_YUKLE);
+    newScript.appendChild(inlineScript);
+    target.appendChild(newScript);
+
+    alert(SS_sayi.toString());
+
+    var delayInMilliseconds = 1000; //1 second
+    for (var i = 0; i < SS_sayi; i++) {
+        setCookie("clickednoktalar", (i + 1).toString(), 5);
+        SS_YUKLE = `KalemSecNokta('NİĞDE GAZOZU');`;
+        var target = document.getElementById("add_to_me");
+        var newScript = document.createElement("script");
+
+        var inlineScript = document.createTextNode(SS_YUKLE);
+        newScript.appendChild(inlineScript);
+            target.appendChild(newScript);
+    }
+    alert("ekran oluşturma son");*@
+
+    var SS_sayi = @sql_cevap_mayali.Rows.Count;
+    for (var i = 0; i < SS_sayi; i++) {
+        SatirEkle();
+        setCookie("clickednoktalar", i.toString(), 5);
+        SS_YUKLE = `KalemSecNokta('NİĞDE GAZOZU');`;
+    }
+</script>

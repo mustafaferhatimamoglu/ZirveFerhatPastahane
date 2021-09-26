@@ -1,0 +1,105 @@
+﻿@page
+@model ZirveFerhatPastahane.Pages.B2BModel
+@{
+}
+
+@{
+    var sql = "select ITEMS1.LOGICALREF,ITEMS1.CODE,ITEMS1.[NAME],ITEMS1.SPECODE,ITEMS3.LOGICALREF as item3lref,ITEMS3.NAME as item3name \n" +
+        ",(select DEFINITION_ from " + Request.Cookies["S_ANA"] + "_SPECODES where " + Request.Cookies["S_ANA"] + "_SPECODES.SPECODE=ITEMS1.SPECODE and SPETYP1 = 1) as SPECODEname \n" +
+        "from " + Request.Cookies["S_ANA"] + "_ITEMS as ITEMS1 ," + Request.Cookies["S_ANA"] + "_ITMUNITA as ITEMS2 , " + Request.Cookies["S_ANA"] + "_UNITSETL as ITEMS3 \n" +
+        " where ITEMS1.NAME != '' " + Request.Cookies["L_SQL"].Replace("*~", " ") + " \n" +
+        "and  ITEMS1.LOGICALREF = ITEMS2.ITEMREF and ITEMS2.UNITLINEREF  = ITEMS3.LOGICALREF";
+    var sql_cevap = Islemler.DB_op.Instance.selectToTiger_DT(sql);
+    //var sql_cevap = Islemler.DB_op.Instance.selectToTiger_DT(" select LOGICALREF,CODE,NAME,SPECODE,(select DEFINITION_ from LG_002_SPECODES where LG_002_SPECODES.SPECODE=LG_002_ITEMS.SPECODE and SPETYP1 = 1) as SPECODEname from " + Request.Cookies["S_ANA"] + "_ITEMS where NAME != '' " + Request.Cookies["L_SQL"].Replace("*~", " "));
+}
+
+<div class="text-center">
+    @*<h1 class="display-4">""T1""</h1>*@
+    @*<p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>*@
+
+    @*<input type="text" class="form-control" name="ID" id="ID" maxlength="50" placeholder="Kullanıcı Adı">
+        <input type="password" class="form-control" name="Pass" id="Pass" maxlength="50" placeholder="Şifre">
+        <button onclick="Giris()">Giris</button>*@
+    <a href="~/B2BSepet">Sepete Git </a>
+    <div class="modal-header">
+        <h2>Stok Rehber</h2>
+        <span class="close">&times;</span>
+    </div>
+    <div class="modal-body">
+        @*<p>Some text in the Modal Body</p>
+        <p>Some other text...</p>*@
+        <input type="text" id="search" placeholder="Ara">
+        <table id="table" class="table table-bordered table-hover table-responsive table-striped" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Name</th>
+                    <th>Birim</th>
+                    <th>Speccodename</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int i = 0; i < sql_cevap.Rows.Count; i++)
+                {
+                    //<option value='@sql_cevap.Rows[i]["NAME"]' data-value='@sql_cevap.Rows[i]["LOGICALREF"]'></option>
+                    <tr onclick="KalemSecNokta('@sql_cevap.Rows[i]["NAME"]')">
+                        <td>@sql_cevap.Rows[i]["CODE"]</td>
+                        <td>@sql_cevap.Rows[i]["NAME"]</td>
+                        <td>@sql_cevap.Rows[i]["item3name"]</td>
+                        <td>@sql_cevap.Rows[i]["SPECODEname"]</td>
+                        <td><a href='javascript:Code_SepeteEkle(@sql_cevap.Rows[i]["CODE"])' data-toggle='tooltip' data-placement='top' title='Sepete'>Sepete ekle </a></td>
+                    </tr>
+                }
+
+            </tbody>
+
+            <tfoot>
+                <tr>
+                    <th>Code</th>
+                    <th>Name</th>
+                    <th>Birim</th>
+                    <th>Speccodename</th>
+                </tr>
+            </tfoot>
+        </table>
+        <script>
+            function Code_SepeteEkle(gelen) {
+                //do {
+                //    var KalemMik = parseInt(window.prompt("Please enter a number from 1 to 100", ""), 10);
+                //} while (isNaN(KalemMik) || KalemMik > 100 || KalemMik < 1);
+
+                var KalemMik = Number(window.prompt("Yeni miktarı giriniz ", "").replace(",", "."));
+                if (isNaN(KalemMik)) {
+                    alert("Girilen değeri kontrol edin");
+                }
+                //let KalemMik = prompt("Miktarı Düzelt");
+                $.ajax({
+                    type: 'GET',
+                    data: jQuery.param({ KalemID: gelen, KalemMik: KalemMik }),
+                    // Note the difference in url (this works if you're actually in Index page)
+                    url: '?handler=KalemMikDuzenle',
+                    success: function (data) {
+                        window.location.href = data;
+                    },
+                    error: function (error) {
+                        alert("Error: " + error);
+                    }
+                })
+            }
+        </script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script>
+            var $rows = $('#table tr');
+            $('#search').keyup(function () {
+                var val = $.trim($(this).val()).replace(/ +/g, ' ').toLowerCase();
+
+                $rows.show().filter(function () {
+                    var text = $(this).text().replace(/\s+/g, ' ').toLowerCase();
+                    if (text.includes('code name birim speccodename')) { return; }
+                    return !~text.indexOf(val);
+                }).hide();
+            });
+        </script>
+    </div>
+
+</div>

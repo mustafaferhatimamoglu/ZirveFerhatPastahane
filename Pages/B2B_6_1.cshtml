@@ -1,0 +1,235 @@
+﻿@page
+@model ZirveFerhatPastahane.Pages.B2B_6_1Model
+@{
+}
+
+<div class="tab">
+    <button class="tablinks" onclick="window.location='B2B_6'">MAYALI</button>
+    <button class="tablinks" onclick="window.location='B2B_6_1'">AMBALAJ</button>
+    <button class="tablinks" onclick="window.location='B2B_6_2'">BÖREK</button>
+    <button class="tablinks" onclick="window.location='B2B_6_3'">KURUPASTA</button>
+    <button class="tablinks" onclick="window.location='B2B_6_4'">SPECIAL</button>
+    <button class="tablinks" onclick="window.location='B2B_6_5'">TATLI</button>
+    <button class="tablinks" onclick="window.location='B2B_6_6'">YAŞPASTA</button>
+</div>
+
+<style>
+    body {
+        font-family: Arial;
+    }
+    /* Style the tab */
+    .tab {
+        overflow: hidden;
+        border: 1px solid #ccc;
+        background-color: #f1f1f1;
+    }
+
+        /* Style the buttons inside the tab */
+        .tab button {
+            background-color: inherit;
+            float: left;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 14px 16px;
+            transition: 0.3s;
+            font-size: 17px;
+        }
+
+            /* Change background color of buttons on hover */
+            .tab button:hover {
+                background-color: #ddd;
+            }
+
+            /* Create an active/current tablink class */
+            .tab button.active {
+                background-color: #ccc;
+            }
+
+    /* Style the tab content */
+    .tabcontent {
+        display: none;
+        padding: 6px 12px;
+        border: 1px solid #ccc;
+        border-top: none;
+    }
+</style>
+
+@{
+    var sql_mayali = "select ROW_NUMBER() OVER(ORDER BY ITEMS1.LOGICALREF) AS sira, ITEMS1.LOGICALREF ,ITEMS1.NAME , ITEMS3.NAME as BIRIM , ITEMS3.LOGICALREF as BIRIM_CODE \n" +
+                "from " + Request.Cookies["S_ANA"] + "_ITEMS as ITEMS1," + Request.Cookies["S_ANA"] + "_ITMUNITA as ITEMS2 , " + Request.Cookies["S_ANA"] + "_UNITSETL as ITEMS3 \n" +
+        "where ITEMS1.NAME != '' and  ITEMS1.LOGICALREF = ITEMS2.ITEMREF and ITEMS2.UNITLINEREF  = ITEMS3.LOGICALREF \n" +
+        "and ITEMS1.SPECODE2 ='AMBALAJ' and ITEMS2.LINENR = 1 \n";
+    var sql_cevap_mayali = Islemler.DB_op.Instance.selectToTiger_DT(sql_mayali);
+    //var sql_cevap = Islemler.DB_op.Instance.selectToTiger_DT(" select LOGICALREF,CODE,NAME,SPECODE,(select DEFINITION_ from LG_002_SPECODES where LG_002_SPECODES.SPECODE=LG_002_ITEMS.SPECODE and SPETYP1 = 1) as SPECODEname from " + Request.Cookies["S_ANA"] + "_ITEMS where NAME != '' " + Request.Cookies["L_SQL"].Replace("*~", " "));
+}
+
+@for (int i = 0; i < sql_cevap_mayali.Rows.Count; i++)
+{
+    //var sira = @i + 1;
+    <label id="urunsecim_@sql_cevap_mayali.Rows[i]["sira"]">@sql_cevap_mayali.Rows[i]["NAME"]</label>
+    <label id="urunseciminp_@sql_cevap_mayali.Rows[i]["sira"]" hidden>@sql_cevap_mayali.Rows[i]["LOGICALREF"]</label>
+    <input id="miktar_@sql_cevap_mayali.Rows[i]["sira"]" name="miktar_@sql_cevap_mayali.Rows[i]["sira"]" style="width: 100px;" type="text" placeholder="Miktar" />
+    <label id="p1_@sql_cevap_mayali.Rows[i]["sira"]" hidden style="width: 50px;">@sql_cevap_mayali.Rows[i]["BIRIM"]</label>
+    <label id="p2_@sql_cevap_mayali.Rows[i]["sira"]" hidden>@sql_cevap_mayali.Rows[i]["BIRIM_CODE"]</label>
+    <hr style="margin-top:0.2rem; margin-bottom:0.2rem" />
+}
+<style>
+    label {
+        display: block;
+        display: inline-block;
+        width: 180px;
+        /*overflow: hidden;*/
+        height: 1.4em;
+        margin-bottom: auto;
+        line-height: 1;
+    }
+</style>
+
+<button onclick="SiparisTamamla()">Siparişi Tamamla</button>
+<script>
+    function SiparisTamamla() {
+        //alert(@sql_cevap_mayali.Rows.Count);
+        var RowCount = @sql_cevap_mayali.Rows.Count;
+        //alert(RowCount);
+        var UrunId = "";
+        var UrunMik = 0;
+        var UrunBirim = "";
+
+        var HataBit = 0;
+
+        var gelen = "";
+        for (var i = 1; i < RowCount + 1; i++) {
+            try {
+                var a1 = document.getElementById('urunseciminp_' + i.toString() + '').textContent;
+                if (a1 == null || a1 == "" || a1 == " ") {
+                    continue;
+                }
+                var a2 = document.getElementById('miktar_' + i.toString() + '').value;
+                if (a2 == null || a2 == "" || a2 == " ") {
+                    continue;
+                }
+                //alert(a2);
+                var a3 = document.getElementById('p2_' + i.toString() + '').textContent;
+                if (a3 == null || a3 == "" || a3 == " ") {
+                    continue;
+                }
+                //alert(a3);
+                //-------------------------------------------------------------------
+                ///////////UrunId = x1;
+                try {
+                    UrunMik = parseInt(a2);
+                } catch (e) {
+                    alert(i.toString() + " Satırda Ürün hatası (miktar)");
+                    HataBit = 1;
+                }
+                //UrunBirim = x3;
+                //var valueBirim = $('#p2_' + i.toString() + '').val();
+                //UrunBirim = $('#p1_' + i.toString() + ' [value="' + valueBirim + '"]').data('value');
+
+                gelen += a1 + "~~" + a2.toString() + "~~" + a3 + "-~-";
+
+
+            } catch (error) {
+                alert(error);
+                console.error(error);
+                //return;
+            }
+
+        }
+        if (HataBit == 1) {
+            //alert("Hatabit var");
+            return;
+        }
+        alert("Siparişiniz aktarıldı, bir sonraki ürün bloğuna geçiliyor.")
+        $.ajax({
+            type: 'GET',
+            data: jQuery.param({ gelen: gelen }),
+            url: '?handler=ProjeOlustur',
+            success: function (data) {
+                //window.location.href = data;
+                window.location.href = '/B2B_6_2';
+            },
+            error: function (error) {
+                alert("Error: " + error);
+            }
+        })
+
+    }
+    function SiparisTamamla_old() {
+        alert(@sql_cevap_mayali.Rows.Count);
+        var UrunId = "";
+        var UrunMik = 0;
+        var UrunBirim = "";
+
+        var HataBit = 0;
+
+        var gelen = "";
+        for (var i = 1; i < sayac - 1; i++) {
+            try {
+                //mycars[i]=
+                var a1 = 'urunseciminp_' + i.toString() + '';
+                var a2 = 'miktar_' + i.toString() + '';
+                var a3 = 'p2_' + i.toString() + '';
+
+                //alert(a1);
+                var x1 = document.getElementById('urunseciminp_' + i.toString() + '').value;
+                if (x1 == null || x1 == "" || x1 == " ") {
+                    alert(i.toString() + " Satırda Ürün hatası (Ürün)");
+                    HataBit = 1;
+                    break;
+                }
+                var x2 = document.getElementById('miktar_' + i.toString() + '').value;
+                if (x2 == null || x2 == "" || x2 == " ") {
+                    alert(i.toString() + " Satırda Ürün hatası (miktar_)");
+                    HataBit = 1;
+                    break;
+                }
+                var x3 = document.getElementById('p2_' + i.toString() + '').value;
+                if (x3 == null || x3 == "" || x3 == " ") {
+                    alert(i.toString() + " Satırda Ürün hatası (Birim)");
+                    HataBit = 1;
+                    break;
+                }
+                alert(x1)
+                //-------------------------------------------------------------------
+                ///////////UrunId = x1;
+                var value = $('#urunseciminp_' + i.toString() + '').val();
+                UrunId = $('#UrunSec_' + i.toString() + ' [value="' + value + '"]').data('value');
+                try {
+                    UrunMik = parseInt(x2);
+                } catch (e) {
+                    alert(i.toString() + " Satırda Ürün hatası (miktar)");
+                    HataBit = 1;
+                }
+                //UrunBirim = x3;
+                var valueBirim = $('#p2_' + i.toString() + '').val();
+                UrunBirim = $('#p1_' + i.toString() + ' [value="' + valueBirim + '"]').data('value');
+
+                gelen += UrunId + "~~" + UrunMik.toString() + "~~" + UrunBirim + "-~-";
+
+
+            } catch (error) {
+                console.error(error);
+                return;
+            }
+
+        }
+        if (HataBit == 1) {
+            //alert("Hatabit var");
+            return;
+        }
+        $.ajax({
+            type: 'GET',
+            data: jQuery.param({ gelen: gelen }),
+            url: '?handler=ProjeOlustur',
+            success: function (data) {
+                window.location.href = data;
+            },
+            error: function (error) {
+                alert("Error: " + error);
+            }
+        })
+
+    }
+</script>

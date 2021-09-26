@@ -1,0 +1,68 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div class="text-center">
+    @*<h1 class="display-4">""T1""</h1>*@
+    @*<p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>*@
+
+    <input type="text" class="form-control" name="ID" id="ID" maxlength="50" placeholder="Kullanıcı Adı">
+    <input type="password" class="form-control" name="Pass" id="Pass" maxlength="50" placeholder="Şifre">
+    <button onclick="Giris()">Giris</button>
+
+
+</div>
+<script>
+    function Giris() {
+        //alert("Start2");
+        var Username = document.getElementById("ID").value;
+        var Pass = document.getElementById("Pass").value;
+        //alert(ID + Pass);
+
+        $.ajax({
+            type: 'GET',
+            data: jQuery.param({ Username: Username, Pass: Pass }),
+            url: '?handler=Giris',
+            success: function (data) {
+                //const obj = JSON.parse(data);
+                //var ZP_ID = obj[0].ID;
+
+                var obj = data.split("-----");
+                document.cookie = "ID=" + obj[0];
+                document.cookie = "Rol=" + obj[1];
+                document.cookie = "ISYERI=" + obj[2];
+                document.cookie = "BOLUM=" + obj[3];
+                document.cookie = "FABRIKA=" + obj[4];
+                document.cookie = "AMBAR=" + obj[5];
+
+
+                var temp = obj[6].split("_");
+
+                document.cookie = "S_ONDEGER =" + temp[0];
+                document.cookie = "S_FIRMNR =" + temp[1];
+                document.cookie = "S_DONEMNR =" + temp[2];
+
+                document.cookie = "S_ANA=" + temp[0] + "_" + temp[1];
+                document.cookie = "S_ALT=" + obj[6];
+                document.cookie = "L_SQL=" + obj[7];
+                document.cookie = "Token=" + obj[8];
+                //window.location.href = data;
+
+                if (obj[1] == 1) {
+                    window.location.href = "UGF";
+                } else if (obj[1] == 100) {
+                    window.location.href = "210807Har";
+                } else if (obj[1] == 8) {
+                    window.location.href = "B2B";
+                } else if (obj[1] == 9) {
+                    window.location.href = "B2B_6";
+                }
+            },
+            error: function (error) {
+                alert("Error: " + error);
+            }
+        })
+    }
+</script>

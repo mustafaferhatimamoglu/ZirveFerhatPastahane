@@ -1,0 +1,458 @@
+﻿@page
+@model ZirveFerhatPastahane.Pages.B2B_2Model
+@{
+}
+
+@{
+    var sql = "select ITEMS1.LOGICALREF,ITEMS1.CODE,ITEMS1.[NAME],ITEMS1.SPECODE,ITEMS3.LOGICALREF as item3lref,ITEMS3.NAME as item3name \n" +
+        ",(select DEFINITION_ from " + Request.Cookies["S_ANA"] + "_SPECODES where " + Request.Cookies["S_ANA"] + "_SPECODES.SPECODE=ITEMS1.SPECODE and SPETYP1 = 1) as SPECODEname \n" +
+        "from " + Request.Cookies["S_ANA"] + "_ITEMS as ITEMS1 ," + Request.Cookies["S_ANA"] + "_ITMUNITA as ITEMS2 , " + Request.Cookies["S_ANA"] + "_UNITSETL as ITEMS3 \n" +
+        " where ITEMS1.NAME != '' " + Request.Cookies["L_SQL"].Replace("*~", " ") + " \n" +
+        "and  ITEMS1.LOGICALREF = ITEMS2.ITEMREF and ITEMS2.UNITLINEREF  = ITEMS3.LOGICALREF";
+    var sql_cevap = Islemler.DB_op.Instance.selectToTiger_DT(sql);
+    //var sql_cevap = Islemler.DB_op.Instance.selectToTiger_DT(" select LOGICALREF,CODE,NAME,SPECODE,(select DEFINITION_ from LG_002_SPECODES where LG_002_SPECODES.SPECODE=LG_002_ITEMS.SPECODE and SPETYP1 = 1) as SPECODEname from " + Request.Cookies["S_ANA"] + "_ITEMS where NAME != '' " + Request.Cookies["L_SQL"].Replace("*~", " "));
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="input-container">
+    <input id="urunseciminp" list="UrunSec" onchange="OnUrunChanged();">
+    <datalist name="UrunSec" id="UrunSec" runat="server">
+
+
+        @for (int i = 0; i < sql_cevap.Rows.Count; i++)
+        {
+            <option value='@sql_cevap.Rows[i]["NAME"]' data-value='@sql_cevap.Rows[i]["LOGICALREF"]' data-valueitem3name='@sql_cevap.Rows[i]["item3name"]' data-valueitem3lref='@sql_cevap.Rows[i]["item3lref"]'></option>
+        }
+
+    </datalist>
+    <button class="input-button" id="myBtn" onclick="myBtnClick(1)">...</button>
+</div>
+
+<script>
+    function KalemSecNokta(gelen) {
+        modal.style.display = "none";
+        document.getElementById("urunseciminp").value = gelen;
+
+
+        var value = $('#urunseciminp').val();
+
+        var ITEM_LREF = $('#UrunSec [value="' + value + '"]').data('value');
+        console.log(ITEM_LREF);
+
+        var t1 = $('#UrunSec [value="' + value + '"]').data('valueitem3name');
+        document.cookie = "ITEM_BREF=" + $('#UrunSec [value="' + value + '"]').data('valueitem3lref');
+        document.getElementById("p1").innerHTML = $('#UrunSec [value="' + value + '"]').data('valueitem3name');
+    }
+    function myBtnClick(gelen) {
+        alert("asds"+gelen);
+        
+    }
+</script>
+<!-- The Modal -->
+<div id="myModal" class="modal">
+
+    <!-- Modal content -->
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Stok Rehber</h2>
+            <span class="close">&times;</span>
+        </div>
+        <div class="modal-body">
+            @*<p>Some text in the Modal Body</p>
+                <p>Some other text...</p>*@
+            <input type="text" id="search" placeholder="Ara">
+            <table id="table" class="table table-bordered table-hover table-responsive table-striped" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Name</th>
+                        <th>Birim</th>
+                        <th>Speccodename</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < sql_cevap.Rows.Count; i++)
+                    {
+                        //<option value='@sql_cevap.Rows[i]["NAME"]' data-value='@sql_cevap.Rows[i]["LOGICALREF"]'></option>
+                        <tr onclick="KalemSecNokta('@sql_cevap.Rows[i]["NAME"]')">
+                            <td>@sql_cevap.Rows[i]["CODE"]</td>
+                            <td>@sql_cevap.Rows[i]["NAME"]</td>
+                            <td>@sql_cevap.Rows[i]["item3name"]</td>
+                            <td>@sql_cevap.Rows[i]["SPECODEname"]</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th>Code</th>
+                        <th>Name</th>
+                        <th>Birim</th>
+                        <th>Speccodename</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<div id="add_to_me"></div>
+
+<button id="ekle" onclick="SatirEkle()">satır ekle</button>
+<script>
+        function SatirEkle() {
+           // alert("I am an alert box!");
+            var Mtext1 =
+                `
+
+</div>
+<div class="input-container">
+    <input id="urunseciminp" list="UrunSec" onchange="OnUrunChanged();">
+    <datalist name="UrunSec" id="UrunSec" runat="server">
+
+
+        @for (int i = 0; i < sql_cevap.Rows.Count; i++)
+        {
+            <option value='@sql_cevap.Rows[i]["NAME"]' data-value='@sql_cevap.Rows[i]["LOGICALREF"]' data-valueitem3name='@sql_cevap.Rows[i]["item3name"]' data-valueitem3lref='@sql_cevap.Rows[i]["item3lref"]'></option>
+        }
+
+    </datalist>
+    <button class="input-button" id="myBtn" onclick="myBtnClick">...</button>
+
+
+
+</div>
+
+
+
+<!-- The Modal -->
+<div id="myModal_5" class="modal">
+
+    <!-- Modal content -->
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Stok Rehber</h2>
+            <span class="close">&times;</span>
+        </div>
+        <div class="modal-body">
+            @*<p>Some text in the Modal Body</p>
+                <p>Some other text...</p>*@
+            <input type="text" id="search" placeholder="Ara">
+            <table id="table" class="table table-bordered table-hover table-responsive table-striped" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Name</th>
+                        <th>Birim</th>
+                        <th>Speccodename</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < sql_cevap.Rows.Count; i++)
+                    {
+                        //<option value='@sql_cevap.Rows[i]["NAME"]' data-value='@sql_cevap.Rows[i]["LOGICALREF"]'></option>
+                        <tr onclick="KalemSecNokta('@sql_cevap.Rows[i]["NAME"]')">
+                            <td>@sql_cevap.Rows[i]["CODE"]</td>
+                            <td>@sql_cevap.Rows[i]["NAME"]</td>
+                            <td>@sql_cevap.Rows[i]["item3name"]</td>
+                            <td>@sql_cevap.Rows[i]["SPECODEname"]</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th>Code</th>
+                        <th>Name</th>
+                        <th>Birim</th>
+                        <th>Speccodename</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+            `;
+            var Mtext2_1 = `
+<script>
+    function KalemSecNokta(gelen) {
+        modal.style.display = "none";
+        document.getElementById("urunseciminp").value = gelen;
+        var value = $('#urunseciminp').val();
+        var ITEM_LREF = $('#UrunSec [value="' + value + '"]').data('value');
+        var t1 = $('#UrunSec [value="' + value + '"]').data('valueitem3name');
+        document.cookie = "ITEM_BREF=" + $('#UrunSec [value="' + value + '"]').data('valueitem3lref');
+        document.getElementById("p1").innerHTML = $('#UrunSec [value="' + value + '"]').data('valueitem3name');
+    }
+`
+            var Mtext2_2 = "</" + "script>";
+            var Mtext3_1 = `
+<script>
+    // Get the modal
+    var modal = document.getElementById("myModal_5");
+
+    // Get the button that opens the modal
+    var btn_5 = document.getElementById("myBtn");
+
+    // Get the <span> element that closes the modal
+    var span = document.getElementsByClassName("close")[0];
+
+    // When the user clicks the button, open the modal
+    btn_5.onclick = function () {
+        alert("UrunSeçNokta");
+        modal.style.display = "block";
+    }
+
+    // When the user clicks on <span> (x), close the modal
+    span.onclick = function () {
+        modal.style.display = "none";
+    }
+
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function (event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+`
+            var Mtext3_2 = "</" + "script>";
+            var sayac = 5;
+            Mtext1 = Mtext1.replace("urunseciminp", "urunseciminp_" + sayac);
+            Mtext1 = Mtext1.replace('"UrunSec"', '"UrunSec_'+ sayac+'"' );
+            Mtext1 = Mtext1.replace("OnUrunChanged", "OnUrunChanged_" + sayac);
+            Mtext1 = Mtext1.replace('"UrunSec"', '"UrunSec_' + sayac + '"');
+            Mtext1 = Mtext1.replace('"UrunSec"', '"UrunSec_' + sayac + '"');
+            Mtext1 = Mtext1.replace("myBtn", "myBtn_" + sayac);
+            //Mtext1 = Mtext1.replace("UrunSecNokta", "UrunSecNokta_" + sayac);
+
+
+            //Mtext3_1 = Mtext3_1.replace("myBtn", "myBtn_" + sayac);
+
+            Mtext1 = Mtext1 + Mtext2_1 + Mtext2_2 + Mtext3_1 + Mtext3_2;
+
+
+            //document.getElementById("add_to_me").innerHTML += Mtext1;
+
+
+
+
+            var target = document.getElementById("add_to_me");
+            var newScript = document.createElement("script");
+
+            var inlineScript = document.createTextNode(Mtext1);
+            newScript.appendChild(inlineScript);
+            target.appendChild(newScript);
+            alert("başarılı1");
+
+        }
+</script>
+
+
+
+
+
+
+@* Butonun içine ... koyma *@
+<style>
+    .input-container {
+        /*width: 250px;*/
+        border: 1px solid #a9a9a9;
+        display: inline-block;
+    }
+
+        .input-container input:focus, .input-container input:active {
+            outline: none;
+        }
+
+        .input-container input {
+            /*width: 90%;*/
+            border: none;
+        }
+
+        .input-container button {
+            float: right;
+        }
+</style>
+
+@* Modal oluşturma *@
+<style>
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    /* The Modal (background) */
+    .modal {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        padding-top: 100px; /* Location of the box */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgb(0,0,0); /* Fallback color */
+        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    }
+
+    /* Modal Content */
+    .modal-content {
+        position: relative;
+        background-color: #fefefe;
+        margin: auto;
+        padding: 0;
+        border: 1px solid #888;
+        width: 80%;
+        box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+        -webkit-animation-name: animatetop;
+        -webkit-animation-duration: 0.4s;
+        animation-name: animatetop;
+        animation-duration: 0.4s
+    }
+
+    /* Add Animation */
+    @@-webkit-keyframes animatetop {
+        from {
+            top: -300px;
+            opacity: 0
+        }
+
+        to {
+            top: 0;
+            opacity: 1
+        }
+    }
+
+    @@keyframes animatetop {
+        from {
+            top: -300px;
+            opacity: 0
+        }
+
+        to {
+            top: 0;
+            opacity: 1
+        }
+    }
+
+    /* The Close Button */
+    .close {
+        color: white;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+    .modal-header {
+        padding: 2px 16px;
+        background-color: #5cb85c;
+        color: white;
+    }
+
+    .modal-body {
+        padding: 2px 16px;
+    }
+</style>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    var $rows = $('#table tr');
+    $('#search').keyup(function () {
+        var val = $.trim($(this).val()).replace(/ +/g, ' ').toLowerCase();
+
+        $rows.show().filter(function () {
+            var text = $(this).text().replace(/\s+/g, ' ').toLowerCase();
+            if (text.includes('code name birim speccodename')) { return; }
+            return !~text.indexOf(val);
+        }).hide();
+    });
+</script>
+
+
+<script>
+    var modal = document.getElementById("myModal");
+    var btn = document.getElementById("myBtn");
+    var span = document.getElementsByClassName("close")[0];
+    btn.onclick = function () {
+        modal.style.display = "block";
+    }
+    span.onclick = function () {
+        modal.style.display = "none";
+    }
+    window.onclick = function (event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+</script>
+
+@*<script>
+        // Get the modal
+        var modal = document.getElementById("myModal");
+
+        // Get the button that opens the modal
+        var btn = document.getElementById("myBtn_5");
+
+        // Get the <span> element that closes the modal
+        var span = document.getElementsByClassName("close")[0];
+
+        // When the user clicks the button, open the modal
+        btn.onclick = function () {
+            //alert("UrunSeçNokta");
+            modal.style.display = "block";
+        }
+
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function () {
+            modal.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function (event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>*@

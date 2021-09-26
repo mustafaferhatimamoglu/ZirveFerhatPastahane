@@ -1,0 +1,456 @@
+﻿@page
+@model ZirveFerhatPastahane.Pages._210807HarModel
+@{
+}
+
+@* Butonun içine ... koyma *@
+<style>
+    .input-container {
+        /*width: 250px;*/
+        border: 1px solid #a9a9a9;
+        display: inline-block;
+    }
+
+        .input-container input:focus, .input-container input:active {
+            outline: none;
+        }
+
+        .input-container input {
+            /*width: 90%;*/
+            border: none;
+        }
+
+        .input-container button {
+            float: right;
+        }
+</style>
+
+@* Modal oluşturma *@
+<style>
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    /* The Modal (background) */
+    .modal {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        padding-top: 100px; /* Location of the box */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgb(0,0,0); /* Fallback color */
+        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    }
+
+    /* Modal Content */
+    .modal-content {
+        position: relative;
+        background-color: #fefefe;
+        margin: auto;
+        padding: 0;
+        border: 1px solid #888;
+        width: 80%;
+        box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+        -webkit-animation-name: animatetop;
+        -webkit-animation-duration: 0.4s;
+        animation-name: animatetop;
+        animation-duration: 0.4s
+    }
+
+    /* Add Animation */
+    @@-webkit-keyframes animatetop {
+        from {
+            top: -300px;
+            opacity: 0
+        }
+
+        to {
+            top: 0;
+            opacity: 1
+        }
+    }
+
+    @@keyframes animatetop {
+        from {
+            top: -300px;
+            opacity: 0
+        }
+
+        to {
+            top: 0;
+            opacity: 1
+        }
+    }
+
+    /* The Close Button */
+    .close {
+        color: white;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+    .modal-header {
+        padding: 2px 16px;
+        background-color: #5cb85c;
+        color: white;
+    }
+
+    .modal-body {
+        padding: 2px 16px;
+    }
+</style>
+
+<div class="input-container">
+    <input id="Ambarseciminp" list="AmbarSec" onchange="OnAmbarChanged();">
+    <datalist name="AmbarSec" id="AmbarSec" runat="server">
+
+        @{
+            var sql = "SELECT NAME  FROM TIGER3.dbo.L_CAPIWHOUSE where FIRMNR = 4 AND NR LIKE '9%'";
+            var sql_cevap = Islemler.DB_op.Instance.selectTo210807Har_DT(sql);
+            //var sql_cevap = Islemler.DB_op.Instance.selectToTiger_DT(" select LOGICALREF,CODE,NAME,SPECODE,(select DEFINITION_ from LG_002_SPECODES where LG_002_SPECODES.SPECODE=LG_002_ITEMS.SPECODE and SPETYP1 = 1) as SPECODEname from " + Request.Cookies["S_ANA"] + "_ITEMS where NAME != '' " + Request.Cookies["L_SQL"].Replace("*~", " "));
+        }
+        @for (int i = 0; i < sql_cevap.Rows.Count; i++)
+        {
+            <option value='@sql_cevap.Rows[i]["NAME"]' data-value='@sql_cevap.Rows[i]["NAME"]'></option>
+        }
+
+    </datalist>
+    <button class="input-button" id="AmbarBtn" onclick="AmbarSecNokta()">...</button>
+
+    <!-- The Modal -->
+    <div id="myModal" class="modal">
+
+        <!-- Modal content -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Ambar Rehber</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                @*<p>Some text in the Modal Body</p>
+                    <p>Some other text...</p>*@
+                <input type="text" id="search" placeholder="Ara">
+                <table id="table" class="table table-bordered table-hover table-responsive table-striped" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Ambar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < sql_cevap.Rows.Count; i++)
+                        {
+                            //<option value='@sql_cevap.Rows[i]["NAME"]' data-value='@sql_cevap.Rows[i]["LOGICALREF"]'></option>
+                            <tr onclick="AmbarSecNokta('@sql_cevap.Rows[i]["NAME"]')">
+                                @*<td>@sql_cevap.Rows[i]["CODE"]</td>*@
+                                <td>@sql_cevap.Rows[i]["NAME"]</td>
+                                @*<td>@sql_cevap.Rows[i]["item3name"]</td>
+                                    <td>@sql_cevap.Rows[i]["SPECODEname"]</td>*@
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th>Ambar</th>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <script>
+                    var $rows = $('#table tr');
+                    $('#search').keyup(function () {
+                        var val = $.trim($(this).val()).replace(/ +/g, ' ').toLowerCase();
+
+                        $rows.show().filter(function () {
+                            var text = $(this).text().replace(/\s+/g, ' ').toLowerCase();
+                            if (text.includes('code name birim speccodename')) { return; }
+                            return !~text.indexOf(val);
+                        }).hide();
+                    });
+                </script>
+            </div>
+        </div>
+
+    </div>
+    <script>
+        function AmbarSecNokta(gelen) {
+            modal.style.display = "none";
+            alert(gelen);
+
+            //document.getElementById("UrunSec").value = gelen;
+            document.getElementById("Ambarseciminp").value = gelen;
+
+            document.cookie = "Where= N'" + encodeURI(gelen) + "'";
+            //console.log("asd2"); // en
+            //var x = document.getElementById("UrunSec").value;
+            //console.log(x);
+            //var x2 = document.getElementById("UrunSec").selectedIndex//.getAttribute('data-value');
+            //console.log(x2);
+
+
+            var value = $('#Ambarnseciminp').val();
+            location.reload();
+
+            var ITEM_LREF = $('#AmbarSec [value="' + value + '"]').data('value');
+            //item3name
+            console.log(ITEM_LREF);
+
+            var t1 = $('#AmbarSec [value="' + value + '"]').data('valueitem3name');
+            document.cookie = "ITEM_BREF=" + $('#AmbarSec [value="' + value + '"]').data('valueitem3lref');
+            document.getElementById("p1").innerHTML = $('#AmbarSec [value="' + value + '"]').data('valueitem3name');
+            console.log(gelen);
+            console.log(t1);
+            //var ITEM_NAME = document.getElementById("UrunSec").value;
+            //var ITEM_BNAME = document.getElementById("p1").innerText;
+            //var ITEM_MIKTAR = document.getElementById("miktar").value.replace(',', '.');
+
+            //$("#UrunSec option[data-value='1002']").attr("selected", "selected");
+            //alert(gelen);
+        }
+    </script>
+    <script>
+        // Get the modal
+        var modal = document.getElementById("myModal");
+
+        // Get the button that opens the modal
+        var btn = document.getElementById("AmbarBtn");
+
+        // Get the <span> element that closes the modal
+        var span = document.getElementsByClassName("close")[0];
+
+        // When the user clicks the button, open the modal
+        btn.onclick = function () {
+            //alert("UrunSeçNokta");
+            modal.style.display = "block";
+        }
+
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function () {
+            modal.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function (event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
+
+</div>
+
+<div class="input-container">
+    <input id="urunseciminp" list="UrunSec" onchange="OnUrunChanged();">
+    <datalist name="UrunSec" id="UrunSec" runat="server">
+
+        @{
+            var sql2 = "SELECT DISTINCT(ITM.CODE) AS 'MALZEME KODU',ITM.NAME AS 'MALZEME ADI' \n" +
+                "FROM HAREKET AS HAR, BELGE AS BLG, TIGER3.dbo.LG_004_ITEMS AS ITM \n" +
+                "WHERE BLG.Belge_ID = HAR.Belge_ID AND HAR.Stok_Kodu = ITM.CODE AND CONVERT(varchar, HAR.Tarih, 23)= CONVERT(varchar, GETDATE(), 23) \n" +
+                "GROUP BY ITM.CODE,ITM.NAME,BLG.Kasa_No,ITM.LOGICALREF ORDER BY ITM.CODE";
+            var sql_cevap2 = Islemler.DB_op.Instance.selectTo210807Har_DT(sql2);
+            //var sql_cevap = Islemler.DB_op.Instance.selectToTiger_DT(" select LOGICALREF,CODE,NAME,SPECODE,(select DEFINITION_ from LG_002_SPECODES where LG_002_SPECODES.SPECODE=LG_002_ITEMS.SPECODE and SPETYP1 = 1) as SPECODEname from " + Request.Cookies["S_ANA"] + "_ITEMS where NAME != '' " + Request.Cookies["L_SQL"].Replace("*~", " "));
+        }
+        @for (int i = 0; i < sql_cevap2.Rows.Count; i++)
+        {
+            <option value='@sql_cevap2.Rows[i]["MALZEME ADI"]' data-value='@sql_cevap2.Rows[i]["MALZEME KODU"]'></option>
+        }
+
+    </datalist>
+    <button class="input-button" id="myBtn" onclick="UrunSecNokta()">...</button>
+
+    <!-- The Modal -->
+    <div id="myModal2" class="modal">
+
+        <!-- Modal content -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Stok Rehber</h2>
+                <span class="close2">&times;</span>
+            </div>
+            <div class="modal-body">
+                @*<p>Some text in the Modal Body</p>
+                    <p>Some other text...</p>*@
+                <input type="text" id="search2" placeholder="Ara">
+                <table id="table2" class="table table-bordered table-hover table-responsive table-striped" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Name</th>
+                            <th>Birim</th>
+                            <th>Speccodename</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < sql_cevap2.Rows.Count; i++)
+                        {
+                            //<option value='@sql_cevap.Rows[i]["NAME"]' data-value='@sql_cevap.Rows[i]["LOGICALREF"]'></option>
+                            <tr onclick="KalemSecNokta('@sql_cevap2.Rows[i]["MALZEME ADI"]')">
+                                <td>@sql_cevap2.Rows[i]["MALZEME KODU"]</td>
+                                <td>@sql_cevap2.Rows[i]["MALZEME ADI"]</td>
+                                @*<td>@sql_cevap.Rows[i]["item3name"]</td>
+                                    <td>@sql_cevap.Rows[i]["SPECODEname"]</td>*@
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th>Code</th>
+                            <th>Name</th>
+                            <th>Birim</th>
+                            <th>Speccodename</th>
+                        </tr>
+                    </tfoot>
+                </table>
+                <script>
+                    var $rows = $('#table tr');
+                    $('#search2').keyup(function () {
+                        var val = $.trim($(this).val()).replace(/ +/g, ' ').toLowerCase();
+
+                        $rows.show().filter(function () {
+                            var text = $(this).text().replace(/\s+/g, ' ').toLowerCase();
+                            if (text.includes('code name birim speccodename')) { return; }
+                            return !~text.indexOf(val);
+                        }).hide();
+                    });
+                </script>
+            </div>
+        </div>
+
+    </div>
+    <script>
+        function KalemSecNokta(gelen) {
+            modal2.style.display = "none";
+            alert(gelen);
+
+            //document.getElementById("UrunSec").value = gelen;
+            document.getElementById("urunseciminp").value = gelen;
+            document.cookie = "Where2=and N'" + gelen+"'";
+            //console.log("asd2"); // en
+            //var x = document.getElementById("UrunSec").value;
+            //console.log(x);
+            //var x2 = document.getElementById("UrunSec").selectedIndex//.getAttribute('data-value');
+            //console.log(x2);
+
+
+            //var value = $('#urunseciminp').val();
+
+            //var ITEM_LREF = $('#UrunSec [value="' + value + '"]').data('value');
+            ////item3name
+            //console.log(ITEM_LREF);
+
+            //var t1 = $('#UrunSec [value="' + value + '"]').data('valueitem3name');
+            //document.cookie = "ITEM_BREF=" + $('#UrunSec [value="' + value + '"]').data('valueitem3lref');
+            //document.getElementById("p1").innerHTML = $('#UrunSec [value="' + value + '"]').data('valueitem3name');
+            //console.log(gelen);
+            //console.log(t1);
+            ////var ITEM_NAME = document.getElementById("UrunSec").value;
+            ////var ITEM_BNAME = document.getElementById("p1").innerText;
+            ////var ITEM_MIKTAR = document.getElementById("miktar").value.replace(',', '.');
+
+            ////$("#UrunSec option[data-value='1002']").attr("selected", "selected");
+            ////alert(gelen);
+        }
+    </script>
+    <script>
+        // Get the modal
+        var modal2 = document.getElementById("myModal2");
+
+        // Get the button that opens the modal
+        var btn2 = document.getElementById("myBtn");
+
+        // Get the <span> element that closes the modal
+        var span2 = document.getElementsByClassName("close2")[0];
+
+        // When the user clicks the button, open the modal
+        btn2.onclick = function () {
+            //alert("UrunSeçNokta");
+            modal2.style.display = "block";
+        }
+
+        // When the user clicks on <span> (x), close the modal
+        span2.onclick = function () {
+            modal2.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window2.onclick = function (event) {
+            if (event.target == modal2) {
+                modal2.style.display = "none";
+            }
+        }
+    </script>
+
+</div>
+
+<br />
+
+
+<div style="overflow-y: auto;" class="table-responsive">
+    <table id="table_Kalemler" class="table table-bordered table-hover table-responsive table-striped">
+        <thead><tr><th>Malzeme Kodu</th><th>Malzeme Adı</th><th>Ambar</th><th>Devir</th><th>Net Satış</th><th>Güncel Stok</th></tr></thead>
+        @{
+            string UserID = Request.Cookies["ID"];
+            string SQL = "SELECT ITM.CODE AS 'MALZEME KODU',ITM.NAME AS 'MALZEME ADI',(SELECT NAME FROM TIGER3.dbo.L_CAPIWHOUSE WHERE DIVISNR=BLG.Kasa_No AND FIRMNR=4 AND NR LIKE '9%') AS 'AMBAR', \n" +
+                "ROUND(ISNULL((SELECT SUM(S.ONHAND) FROM TIGER3.dbo.LV_004_01_STINVTOT AS S, TIGER3.dbo.L_CAPIWHOUSE AS CH WHERE S.STOCKREF = ITM.LOGICALREF AND S.INVENNO = CH.NR \n" +
+                "AND CH.DIVISNR = BLG.Kasa_No AND S.INVENNO <> '-1' AND CH.FIRMNR = 4 AND CH.NR LIKE '9%' AND S.DATE_ < CONVERT(varchar, GETDATE(), 23)), 0),3) AS 'DEVİR', SUM(HAR.Adet) AS 'NET SATIŞ', \n" +
+                "ROUND(((ROUND(ISNULL((SELECT SUM(S.ONHAND) FROM TIGER3.dbo.LV_004_01_STINVTOT AS S, TIGER3.dbo.L_CAPIWHOUSE AS CH WHERE S.STOCKREF = ITM.LOGICALREF AND S.INVENNO = CH.NR \n" +
+                "AND CH.DIVISNR = BLG.Kasa_No AND S.INVENNO <> '-1' AND CH.FIRMNR = 4 AND CH.NR LIKE '9%' AND S.DATE_ < CONVERT(varchar, GETDATE(), 23)), 0), 3)) - SUM(HAR.Adet)),3) AS 'GÜNCEL STOK' \n" +
+                "FROM HAREKET AS HAR, BELGE AS BLG, TIGER3.dbo.LG_004_ITEMS AS ITM \n" +
+                "  WHERE BLG.Belge_ID = HAR.Belge_ID AND HAR.Stok_Kodu = ITM.CODE AND CONVERT(varchar, HAR.Tarih, 23)= CONVERT(varchar, GETDATE() -1 , 23) \n";
+            try
+            {
+
+                string asd = System.Web.HttpUtility.UrlDecode(Request.Cookies["Where"]);
+                if (Request.Cookies["Where"] != null)
+                {
+                    SQL += " and  (SELECT NAME FROM TIGER3.dbo.L_CAPIWHOUSE WHERE DIVISNR=BLG.Kasa_No AND FIRMNR=4 AND NR LIKE '9%') = " + System.Web.HttpUtility.UrlDecode(Request.Cookies["Where"]);
+                    string asd2 = Request.Cookies["Where"];
+                }
+
+            }
+            catch { }
+            SQL += "GROUP BY ITM.CODE,ITM.NAME,BLG.Kasa_No,ITM.LOGICALREF \n" +
+             "ORDER BY BLG.Kasa_No,ITM.CODE";
+            //SQL += " where Users_ID = N'" + UserID + "' order by ID desc ";
+            var sql_cevaptable_Kalemler = Islemler.DB_op.Instance.selectTo210807Har_DT(SQL);
+        }
+        @for (int i = 0; i < sql_cevaptable_Kalemler.Rows.Count; i++)
+        {
+            @*<option value='@sql_cevap.Rows[i]["ITEM_LREF"]' data-value='@sql_cevap.Rows[i]["ITEM_NAME"]'></option>*@
+    <tr>
+        @*<td><a href='javascript:Bayi_Sil(\"" + @sql_cevaptable_Kalemler.Rows[i]["ID"] + "\")' title='Sil'><i class='fa fa-trash-o fa-lg'></i></a></td>
+        <td><a href='javascript:Bayi_Sil(\"" + @sql_cevaptable_Kalemler.Rows[i]["ID"] + "\")' title='Sil'><i class='fa fa-trash fa-lg'></i></a></td>
+        <td><a href='javascript:Bayi_Sil(\"" + @sql_cevaptable_Kalemler.Rows[i]["ID"] + "\")' title='Sil'><i class='text-danger fa fa-trash-o fa-lg'></i></a></td>*@
+        @*<td><a href='javascript:ID_Sil(@sql_cevaptable_Kalemler.Rows[i]["ID"])' title='Sil'><i class='text-danger fa fa-trash fa-lg'></i></a></td>*@
+        @*<td><a href='javascript:Bayi_Sil(\"" + @sql_cevaptable_Kalemler.Rows[i]["ID"] + "\")' title='Sil'><i class='fa fa-trash-o fa-lg'></i></a></td>*@
+        @*<td>@sql_cevaptable_Kalemler.Rows[i]["ITEM_LREF"]</td>*@
+        @*<td>@sql_cevaptable_Kalemler.Rows[i]["ITEM_NAME"]</td>*@
+        @*<td>@sql_cevaptable_Kalemler.Rows[i]["ITEM_BREF"]</td>*@
+        @*<td>@sql_cevaptable_Kalemler.Rows[i]["ITEM_BNAME"]</td>*@
+        @*<td>
+            @sql_cevaptable_Kalemler.Rows[i]["ITEM_MIKTAR"]
+            <a href='javascript:ID_MikDuzenle(@sql_cevaptable_Kalemler.Rows[i]["ID"])' data-toggle='tooltip' data-placement='top' title='Düzenle'><i class='text-success fa fa-pencil-alt fa-lg'></i></a>
+        </td>*@
+
+        <td>@sql_cevaptable_Kalemler.Rows[i]["MALZEME KODU"]</td>
+        <td>@sql_cevaptable_Kalemler.Rows[i]["MALZEME ADI"]</td>
+        <td>@sql_cevaptable_Kalemler.Rows[i]["AMBAR"]</td>
+        <td>@sql_cevaptable_Kalemler.Rows[i]["DEVİR"]</td>
+        <td>@sql_cevaptable_Kalemler.Rows[i]["NET SATIŞ"]</td>
+        <td>@sql_cevaptable_Kalemler.Rows[i]["GÜNCEL STOK"]</td>
+    </tr>
+        }
+    </table>
+</div>

@@ -1,0 +1,637 @@
+﻿@page
+@model ZirveFerhatPastahane.Pages.UGFModel
+@{
+}
+
+@*<select name="UrunSec_dep" id="UrunSec_dep" onchange="OnUrunChanged(this);">
+        <option value="0">Ürün Seçimi yapın</option>
+    </select>*@
+@*<input list="UrunSec">
+    <select id="UrunSec" name="UrunSec" onchange="OnUrunChanged(this);">
+        <option value="0">Ürün Seçimi yapın</option>
+    </select>*@
+@* Butonun içine ... koyma *@
+<style>
+    .input-container {
+        /*width: 250px;*/
+        border: 1px solid #a9a9a9;
+        display: inline-block;
+    }
+
+        .input-container input:focus, .input-container input:active {
+            outline: none;
+        }
+
+        .input-container input {
+            /*width: 90%;*/
+            border: none;
+        }
+
+        .input-container button {
+            float: right;
+        }
+</style>
+
+@* Modal oluşturma *@
+<style>
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    /* The Modal (background) */
+    .modal {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        padding-top: 100px; /* Location of the box */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgb(0,0,0); /* Fallback color */
+        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    }
+
+    /* Modal Content */
+    .modal-content {
+        position: relative;
+        background-color: #fefefe;
+        margin: auto;
+        padding: 0;
+        border: 1px solid #888;
+        width: 80%;
+        box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+        -webkit-animation-name: animatetop;
+        -webkit-animation-duration: 0.4s;
+        animation-name: animatetop;
+        animation-duration: 0.4s
+    }
+
+    /* Add Animation */
+    @@-webkit-keyframes animatetop {
+        from {
+            top: -300px;
+            opacity: 0
+        }
+
+        to {
+            top: 0;
+            opacity: 1
+        }
+    }
+
+    @@keyframes animatetop {
+        from {
+            top: -300px;
+            opacity: 0
+        }
+
+        to {
+            top: 0;
+            opacity: 1
+        }
+    }
+
+    /* The Close Button */
+    .close {
+        color: white;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+    .modal-header {
+        padding: 2px 16px;
+        background-color: #5cb85c;
+        color: white;
+    }
+
+    .modal-body {
+        padding: 2px 16px;
+    }
+</style>
+
+
+<div class="input-container">
+    <input id="urunseciminp" list="UrunSec" onchange="OnUrunChanged();">
+    <datalist name="UrunSec" id="UrunSec" runat="server">
+
+        @{
+            var sql = "select ITEMS1.LOGICALREF,ITEMS1.CODE,ITEMS1.[NAME],ITEMS1.SPECODE,ITEMS3.LOGICALREF as item3lref,ITEMS3.NAME as item3name \n" +
+                ",(select DEFINITION_ from " + Request.Cookies["S_ANA"] + "_SPECODES where " + Request.Cookies["S_ANA"] + "_SPECODES.SPECODE=ITEMS1.SPECODE and SPETYP1 = 1) as SPECODEname \n" +
+                "from " + Request.Cookies["S_ANA"] + "_ITEMS as ITEMS1 ," + Request.Cookies["S_ANA"] + "_ITMUNITA as ITEMS2 , " + Request.Cookies["S_ANA"] + "_UNITSETL as ITEMS3 \n" +
+                " where ITEMS1.NAME != '' " + Request.Cookies["L_SQL"].Replace("*~", " ") + " \n" +
+                "and  ITEMS1.LOGICALREF = ITEMS2.ITEMREF and ITEMS2.UNITLINEREF  = ITEMS3.LOGICALREF";
+            var sql_cevap = Islemler.DB_op.Instance.selectToTiger_DT(sql);
+            //var sql_cevap = Islemler.DB_op.Instance.selectToTiger_DT(" select LOGICALREF,CODE,NAME,SPECODE,(select DEFINITION_ from LG_002_SPECODES where LG_002_SPECODES.SPECODE=LG_002_ITEMS.SPECODE and SPETYP1 = 1) as SPECODEname from " + Request.Cookies["S_ANA"] + "_ITEMS where NAME != '' " + Request.Cookies["L_SQL"].Replace("*~", " "));
+        }
+        @for (int i = 0; i < sql_cevap.Rows.Count; i++)
+        {
+            <option value='@sql_cevap.Rows[i]["NAME"]' data-value='@sql_cevap.Rows[i]["LOGICALREF"]' data-valueitem3name='@sql_cevap.Rows[i]["item3name"]' data-valueitem3lref='@sql_cevap.Rows[i]["item3lref"]' ></option>
+        }
+
+    </datalist>
+    <button class="input-button" id="myBtn" onclick="UrunSecNokta()">...</button>
+
+    <!-- The Modal -->
+    <div id="myModal" class="modal">
+
+        <!-- Modal content -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Stok Rehber</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                @*<p>Some text in the Modal Body</p>
+                <p>Some other text...</p>*@
+                <input type="text" id="search" placeholder="Ara">
+                <table id="table" class="table table-bordered table-hover table-responsive table-striped" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Name</th>
+                            <th>Birim</th>
+                            <th>Speccodename</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < sql_cevap.Rows.Count; i++)
+                        {
+                            //<option value='@sql_cevap.Rows[i]["NAME"]' data-value='@sql_cevap.Rows[i]["LOGICALREF"]'></option>
+                            <tr onclick="KalemSecNokta('@sql_cevap.Rows[i]["NAME"]')">
+                                <td>@sql_cevap.Rows[i]["CODE"]</td>
+                                <td>@sql_cevap.Rows[i]["NAME"]</td>
+                                <td>@sql_cevap.Rows[i]["item3name"]</td>
+                                <td>@sql_cevap.Rows[i]["SPECODEname"]</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th>Code</th>
+                            <th>Name</th>
+                            <th>Birim</th>
+                            <th>Speccodename</th>
+                        </tr>
+                    </tfoot>
+                </table>
+                <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+                <script>
+                    var $rows = $('#table tr');
+                    $('#search').keyup(function () {
+                        var val = $.trim($(this).val()).replace(/ +/g, ' ').toLowerCase();
+
+                        $rows.show().filter(function () {
+                            var text = $(this).text().replace(/\s+/g, ' ').toLowerCase();
+                            if (text.includes('code name birim speccodename')) { return; }
+                            return !~text.indexOf(val);
+                        }).hide();
+                    });
+                </script>
+            </div>
+        </div>
+
+    </div>
+    <script>
+        function KalemSecNokta(gelen) {
+            modal.style.display = "none";
+            alert(gelen);
+
+            //document.getElementById("UrunSec").value = gelen;
+            document.getElementById("urunseciminp").value = gelen;
+            //console.log("asd2"); // en
+            //var x = document.getElementById("UrunSec").value;
+            //console.log(x);
+            //var x2 = document.getElementById("UrunSec").selectedIndex//.getAttribute('data-value');
+            //console.log(x2);
+
+
+            var value = $('#urunseciminp').val();
+
+            var ITEM_LREF = $('#UrunSec [value="' + value + '"]').data('value');
+            //item3name
+            console.log(ITEM_LREF);
+
+            var t1 = $('#UrunSec [value="' + value + '"]').data('valueitem3name');
+            document.cookie = "ITEM_BREF=" + $('#UrunSec [value="' + value + '"]').data('valueitem3lref');
+            document.getElementById("p1").innerHTML = $('#UrunSec [value="' + value + '"]').data('valueitem3name');
+            console.log(gelen);
+            console.log(t1);
+            //var ITEM_NAME = document.getElementById("UrunSec").value;
+            //var ITEM_BNAME = document.getElementById("p1").innerText;
+            //var ITEM_MIKTAR = document.getElementById("miktar").value.replace(',', '.');
+
+            //$("#UrunSec option[data-value='1002']").attr("selected", "selected");
+            //alert(gelen);
+        }
+    </script>
+    <script>
+        // Get the modal
+        var modal = document.getElementById("myModal");
+
+        // Get the button that opens the modal
+        var btn = document.getElementById("myBtn");
+
+        // Get the <span> element that closes the modal
+        var span = document.getElementsByClassName("close")[0];
+
+        // When the user clicks the button, open the modal
+        btn.onclick = function () {
+            //alert("UrunSeçNokta");
+            modal.style.display = "block";
+        }
+
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function () {
+            modal.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function (event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
+
+</div>
+
+
+@*@{
+        var greeting = "Welcome to our site!";
+        var weekDay = DateTime.Now.DayOfWeek;
+        var greetingMessage = greeting + " Here in Huston it is: " + weekDay;
+    }
+    <p>The greeting is: @greetingMessage</p>*@
+
+@*<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.6/js/standalone/selectize.min.js" integrity="sha256-+C0A5Ilqmu4QcSPxrlGpaZxJ04VjsRjKu+G82kl5UJk=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.6/css/selectize.bootstrap3.min.css" integrity="sha256-ze/OEYGcFbPRmvCnrSeKbRTtjG4vGLHXgOqsyLFTRjg=" crossorigin="anonymous" />*@
+@*<script>
+        $(document).ready(function () {
+            $('select').selectize({
+                sortField: 'text'
+            });
+        });
+    </script>
+    <select id="select-state" placeholder="Pick a state...">
+        <option value="">Select a state...</option>
+        <option value="AL">Alabama</option>
+        <option value="AK">Alaska</option>
+        <option value="AZ">Arizona</option>
+        <option value="AR">Arkansas</option>
+        <option value="CA">California</option>
+        <option value="CO">Colorado</option>
+        <option value="CT">Connecticut</option>
+        <option value="DE">Delaware</option>
+        <option value="DC">District of Columbia</option>
+        <option value="FL">Florida</option>
+        <option value="GA">Georgia</option>
+        <option value="HI">Hawaii</option>
+        <option value="ID">Idaho</option>
+        <option value="IL">Illinois</option>
+        <option value="IN">Indiana</option>
+    </select>*@
+
+@*<input id="miktar" name="miktar" type="text" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" />*@
+@*<input id="miktar" name="miktar" type="text" oninput="this.value = this.value.replace(/[^0-9.,]/g, '').replace(/(\..*?)\..*/g, '$1');" />*@
+@*<input id="miktar" name="miktar" type="text" oninput="this.value = this.value.replace(/[^0-9\.]+/g, '').replace(/(\..*?)\..*/g, '$1');" />
+    <input id="miktar" name="miktar" type="text" oninput="this.value = this.value.replace(/[^0-9\.\,]+/g, '').replace(/(\..*?)\..*/g, '$1');" />*@
+<input id="miktar" name="miktar" type="text" oninput="this.value = this.value.replace(/[^0-9.,]/g, '').replace(/(\..*?)\..*/g, '$1').replace(/(\,,*?)\,,*/g, '$1');" />
+
+
+<label id="p1">Birim</label>
+@*<script>
+        document.getElementById("p1").innerHTML = "Birim";
+    </script>*@
+<button onclick="Kalemlere_Ekle()">Kalemlere Ekle</button>
+<script>
+    function Kalemlere_Ekle() {
+        //document.getElementById("demo").innerHTML = "Hello World";
+        //alert("asd");
+        var value = $('#urunseciminp').val();
+        //alert($('#UrunSec [value="' + value + '"]').data('value'));
+        //var logrefurun = $('#UrunSec [value="' + value + '"]').data('value');
+
+        //var ITEM_LREF = document.getElementById("UrunSec").value;
+        //var ITEM_NAME = "yapılandırılmadı";
+        var ITEM_LREF = $('#UrunSec [value="' + value + '"]').data('value');
+        var ITEM_NAME = document.getElementById("UrunSec").value;
+        //var ITEM_BREF =
+        var ITEM_BNAME = document.getElementById("p1").innerText;
+        //var ITEM_MIKTAR = document.getElementById("p1").textContent;
+        var ITEM_MIKTAR = document.getElementById("miktar").value.replace(',', '.');
+
+        //var n = prompt("Check your number", "Type your number here");
+        ITEM_MIKTAR = Number(ITEM_MIKTAR);
+        if (isNaN(ITEM_MIKTAR)) {
+            alert("Girilen değeri kontrol edin");
+        }
+
+
+        //var PE = "asd";//document.getElementById("UrunSec").innerHTML;
+        //var PT = document.getElementById("UrunSec").innerText;
+        //alert(a1+a2+a3);
+        $.ajax({
+            type: 'GET',
+            data: jQuery.param({ ITEM_LREF: ITEM_LREF, ITEM_NAME: ITEM_NAME, ITEM_BNAME: ITEM_BNAME, ITEM_MIKTAR: ITEM_MIKTAR }),
+            // Note the difference in url (this works if you're actually in Index page)
+            url: '?handler=ProjeOlustur',
+            success: function (data) {
+                window.location.href = data;
+            },
+            error: function (error) {
+                alert("Error: " + error);
+            }
+        })
+    }
+</script>
+
+<br />
+
+<div style="overflow-y: auto;" class="table-responsive">
+    <table id="table_Kalemler" class="table table-bordered table-hover table-responsive table-striped">
+        <thead><tr><th>Sil</th><th>Ürün adı</th><th>Birim</th><th>Miktar</th></tr></thead>
+        @{
+            string UserID = Request.Cookies["ID"];
+            string SQL = "SELECT TOP (1000) [ID],[Users_ID],[ITEM_LREF],[ITEM_NAME],[ITEM_BREF],[ITEM_BNAME],[ITEM_MIKTAR] FROM ARA_STLINE";
+            SQL += " where Users_ID = N'" + UserID + "' order by ID desc ";
+            var sql_cevaptable_Kalemler = Islemler.DB_op.Instance.selectToZP_DT(SQL);
+        }
+        @for (int i = 0; i < sql_cevaptable_Kalemler.Rows.Count; i++)
+        {
+            @*<option value='@sql_cevap.Rows[i]["ITEM_LREF"]' data-value='@sql_cevap.Rows[i]["ITEM_NAME"]'></option>*@
+            <tr>
+                @*<td><a href='javascript:Bayi_Sil(\"" + @sql_cevaptable_Kalemler.Rows[i]["ID"] + "\")' title='Sil'><i class='fa fa-trash-o fa-lg'></i></a></td>
+                    <td><a href='javascript:Bayi_Sil(\"" + @sql_cevaptable_Kalemler.Rows[i]["ID"] + "\")' title='Sil'><i class='fa fa-trash fa-lg'></i></a></td>
+                    <td><a href='javascript:Bayi_Sil(\"" + @sql_cevaptable_Kalemler.Rows[i]["ID"] + "\")' title='Sil'><i class='text-danger fa fa-trash-o fa-lg'></i></a></td>*@
+                <td><a href='javascript:ID_Sil(@sql_cevaptable_Kalemler.Rows[i]["ID"])' title='Sil'><i class='text-danger fa fa-trash fa-lg'></i></a></td>
+                @*<td><a href='javascript:Bayi_Sil(\"" + @sql_cevaptable_Kalemler.Rows[i]["ID"] + "\")' title='Sil'><i class='fa fa-trash-o fa-lg'></i></a></td>*@
+                @*<td>@sql_cevaptable_Kalemler.Rows[i]["ITEM_LREF"]</td>*@
+                <td>@sql_cevaptable_Kalemler.Rows[i]["ITEM_NAME"]</td>
+                @*<td>@sql_cevaptable_Kalemler.Rows[i]["ITEM_BREF"]</td>*@
+                <td>@sql_cevaptable_Kalemler.Rows[i]["ITEM_BNAME"]</td>
+                <td>
+                    @sql_cevaptable_Kalemler.Rows[i]["ITEM_MIKTAR"]
+                    <a href='javascript:ID_MikDuzenle(@sql_cevaptable_Kalemler.Rows[i]["ID"])' data-toggle='tooltip' data-placement='top' title='Düzenle'><i class='text-success fa fa-pencil-alt fa-lg'></i></a>
+                </td>
+            </tr>
+        }
+    </table>
+</div>
+<script>
+    function ID_Sil(gelen) {
+        if (confirm("Kalem silinecek.İşlem Geri alınamaz. Eminmisiniz!")) {
+            $.ajax({
+                type: 'GET',
+                data: jQuery.param({ KalemID: gelen }),
+                // Note the difference in url (this works if you're actually in Index page)
+                url: '?handler=KalemSil',
+                success: function (data) {
+                    window.location.href = data;
+                },
+                error: function (error) {
+                    alert("Error: " + error);
+                }
+            })
+        }
+    }
+    function ID_MikDuzenle(gelen) {
+        //do {
+        //    var KalemMik = parseInt(window.prompt("Please enter a number from 1 to 100", ""), 10);
+        //} while (isNaN(KalemMik) || KalemMik > 100 || KalemMik < 1);
+
+        var KalemMik = Number(window.prompt("Yeni miktarı giriniz ", "").replace(",", "."));
+        if (isNaN(KalemMik)) {
+            alert("Girilen değeri kontrol edin");
+        }
+        //let KalemMik = prompt("Miktarı Düzelt");
+        $.ajax({
+            type: 'GET',
+            data: jQuery.param({ KalemID: gelen, KalemMik: KalemMik }),
+            // Note the difference in url (this works if you're actually in Index page)
+            url: '?handler=KalemMikDuzenle',
+            success: function (data) {
+                window.location.href = data;
+            },
+            error: function (error) {
+                alert("Error: " + error);
+            }
+        })
+    }
+</script>
+<br />
+<button onclick="Logoya_Aktar()">Logoya_Aktar</button>
+<script>
+    function Logoya_Aktar() {
+        //document.getElementById("demo").innerHTML = "Hello World";
+        /////////// alert("asd");
+
+        $.ajax({
+            type: 'GET',
+            //data: jQuery.param({ ITEM_LREF: ITEM_LREF, ITEM_NAME: ITEM_NAME, ITEM_BNAME: ITEM_BNAME, ITEM_MIKTAR: ITEM_MIKTAR }),
+            // Note the difference in url (this works if you're actually in Index page)
+            url: '?handler=Logoya_Aktar',
+            success: function (data) {
+                window.location.href = data;
+            },
+            error: function (error) {
+                alert("Error: " + error);
+            }
+        })
+    }
+</script>
+
+
+@*Ürün Seçildi*@
+<script>
+    //$(document).on('change', "#UrunSec", function () {
+    //    alert("asd");
+    //    alert($(this).val())
+    //});
+    //$("#UrunSec").on('change', function () {
+    //    alert("hi");
+    //});
+    function OnUrunChanged() {
+        var value = $('#urunseciminp').val();
+        document.cookie = "ITEM_BREF=" + $('#UrunSec [value="' + value + '"]').data('valueitem3lref');
+        document.getElementById("p1").innerHTML = $('#UrunSec [value="' + value + '"]').data('valueitem3name');
+        //alert(gelen);
+
+        //var value = $('#urunseciminp').val();
+        ////alert($('#UrunSec [value="' + value + '"]').data('value'));
+        //var logrefurun = $('#UrunSec [value="' + value + '"]').data('value');
+
+        //$.ajax({
+        //    type: 'GET',
+        //    data: jQuery.param({ LOGICALREF: logrefurun }),
+        //    url: '?handler=UrunSecildi',
+        //    success: function (data) {
+        //        //alert("urun secildi " + value);
+        //        //const obj = JSON.parse(data);
+        //        ////var ZP_ID = obj[0].ID;
+        //        //document.cookie = "ID=" + obj[0].ID;
+        //        //document.cookie = "Rol=" + obj[0].Rol;
+        //        //document.cookie = "ISYERI=" + obj[0].ISYERI;
+        //        //document.cookie = "BOLUM=" + obj[0].BOLUM;
+        //        //document.cookie = "FABRIKA=" + obj[0].FABRIKA;
+        //        //document.cookie = "AMBAR=" + obj[0].AMBAR;
+        //        ////window.location.href = data;
+        //        //if (obj[0].Rol == 1) {
+        //        //    window.location.href = "UGF";
+        //        //}
+
+        //        //document.cookie = "SeciliUrunIsmi=" + obj[0].S_ALT;
+        //        ////document.cookie = "ITEM_BREF=" + obj[0].S_ALT;
+
+
+        //        ////////const obj = JSON.parse(data);
+        //        ////////document.cookie = "ITEM_BREF=" + obj[0].LOGICALREF;
+        //        ////////document.getElementById("p1").innerHTML = obj[0].CODE;
+        //        var obj = data.split("-----");
+        //        document.cookie = "ITEM_BREF=" + obj[1];
+        //        document.getElementById("p1").innerHTML = obj[0];
+
+        //        //document.getElementById("p1").innerHTML = data;
+        //    },
+        //    error: function (error) {
+        //        alert("Error: " + error);
+        //    }
+        //})
+    }
+</script>
+
+
+
+
+
+
+
+@*UrunleriGetir*@
+<!--<script>
+    var delayInMilliseconds = 1000;
+    setTimeout(function () {
+        $.ajax({
+            type: 'GET',
+            //data: jQuery.param({ ID: "asd2" }),
+            // Note the difference in url (this works if you're actually in Index page)
+            url: '?handler=SayfaYukle',
+            success: function (data) {
+
+                //alert("asd1");
+                //const obj = JSON.parse(data);
+                const obj = JSON.parse(data);
+                for (var i = 0; i < obj.length; i++) {
+                    //var x = document.getElementById("UrunSec_dep");
+                    //var option = document.createElement("option");
+                    //option.text = obj[i].NAME;
+                    //option.value = obj[i].LOGICALREF;
+                    //x.add(option);
+
+
+                    $("#UrunSec").append('<option value="' + obj[i].NAME + '" data-value="' + obj[i].LOGICALREF + '"></option>');
+
+                    // a1++;
+                }
+                //alert("asd");
+                //var a1 = data.split("---");
+                //var def = "";
+                //for (var i = 1; i < a1.length - 1; i++) {
+                //    def += a1[i] + "    ";
+                //    var x = document.getElementById("ProjectTalepEdilenHocaID");
+                //    var option = document.createElement("option");
+                //    option.text = a1[i];
+                //    x.add(option);
+                //}
+                //$("#table_plasiyer_Listesi").append("<thead><tr><th><input id='chb_plasiyer_tumunu_sec' type='checkbox' onchange='javascript:degistir();'/><label for='chb_plasiyer_tumunu_sec' style='-webkit-user-select:none;'></label></th><th>Project ID</th><th>Öğrenci</th><th>Proje İsmi</th><th>Proje Açıklaması</th><th>Proje Talep Edilen Hoca</th><th>Proje Talep Tarihi</th><th>Onay Durum</th><th>Onay Açıklama</th><th>Atanan Hoca</th><th>Onay Tarihi</th><th>Not</th><th>Not Açıklama</th><th>Not Tarihi</th><th>İşlem</th></tr></thead>");
+            },
+            error: function (error) {
+                alert("Error: " + error);
+            }
+        })
+    }, delayInMilliseconds);
+    //var delayInMilliseconds = 1000;
+    //setTimeout(function () {
+    //    $.ajax({
+    //        type: 'GET',
+    //        //data: jQuery.param({ ID: "asd2" }),
+    //        // Note the difference in url (this works if you're actually in Index page)
+    //        url: '?handler=SayfaYukle',
+    //        success: function (data) {
+
+    //            //alert("asd1");
+    //            //const obj = JSON.parse(data);
+    //            const obj = JSON.parse(data);
+    //            for (var i = 0; i < obj.length; i++) {
+    //                var x = document.getElementById("UrunSec");
+    //                var option = document.createElement("option");
+    //                option.text = obj[i].NAME;
+    //                option.value = obj[i].LOGICALREF;
+    //                x.add(option);
+    //                // a1++;
+    //            }
+    //            //alert("asd");
+    //            //var a1 = data.split("---");
+    //            //var def = "";
+    //            //for (var i = 1; i < a1.length - 1; i++) {
+    //            //    def += a1[i] + "    ";
+    //            //    var x = document.getElementById("ProjectTalepEdilenHocaID");
+    //            //    var option = document.createElement("option");
+    //            //    option.text = a1[i];
+    //            //    x.add(option);
+    //            //}
+    //            //$("#table_plasiyer_Listesi").append("<thead><tr><th><input id='chb_plasiyer_tumunu_sec' type='checkbox' onchange='javascript:degistir();'/><label for='chb_plasiyer_tumunu_sec' style='-webkit-user-select:none;'></label></th><th>Project ID</th><th>Öğrenci</th><th>Proje İsmi</th><th>Proje Açıklaması</th><th>Proje Talep Edilen Hoca</th><th>Proje Talep Tarihi</th><th>Onay Durum</th><th>Onay Açıklama</th><th>Atanan Hoca</th><th>Onay Tarihi</th><th>Not</th><th>Not Açıklama</th><th>Not Tarihi</th><th>İşlem</th></tr></thead>");
+    //        },
+    //        error: function (error) {
+    //            alert("Error: " + error);
+    //        }
+    //    })
+    //}, delayInMilliseconds);
+</script>-->
+@*KalemUrunleriGetir*@
+<!----<script>
+    var delayInMilliseconds = 1000;
+    setTimeout(function () {
+        $.ajax({
+            type: 'GET',
+            //data: jQuery.param({ ID: "asd2" }),
+            // Note the difference in url (this works if you're actually in Index page)
+            url: '?handler=KalemUrunleriGetir',
+            success: function (data) {
+                $("#table_Kalemler").append("<thead><tr><th><input id='chb_plasiyer_tumunu_sec' type='checkbox' onchange='javascript:degistir();'/><label for='chb_plasiyer_tumunu_sec' style='-webkit-user-select:none;'></label></th><th>ITEM_LREF</th><th>ITEM_NAME</th><th>ITEM_BREF</th><th>ITEM_BNAME</th><th>ITEM_MIKTAR</th></tr></thead>");
+                const obj = JSON.parse(data);
+                //$("#table_plasiyer_Listesi").append("asd");
+                //$("#table_plasiyer_Listesi").append(obj.);
+                for (var i = 0; i < obj.length; i++) {
+                    $("#table_Kalemler").append("<tr><td><input name='plasiyer' type='checkbox' value='" + obj[i].ID + "' /></td><td>"
+                        + obj[i].ITEM_LREF + "</td><td>"
+                        + obj[i].ITEM_NAME + "</td><td>"
+                        + obj[i].ITEM_BREF + "</td><td>"
+                        + obj[i].ITEM_BNAME + "</td><td>"
+                        + obj[i].ITEM_MIKTAR + "</td>"
+                        //+ obj[i].ProjectDatetime + "</td><td>"
+                        //+ obj[i].KomisyonOnay + "</td><td>"
+                        //+ obj[i].KomisyonOnayAçıklama + "</td><td>"
+                        //+ obj[i].KomisyonOnaylananHoca + "</td><td>"
+                        //+ obj[i].KomisyonDatetime + "</td><td>"
+                        //+ obj[i].StajDegerlendiriciNot + "</td><td>"
+                        //+ obj[i].StajDegerlendiriciAcıklama + "</td><td>"
+                        //+ obj[i].StajDegerlendiriciDatetime + "</td><td>"
+                        + "</tr>");
+                }
+            },
+            error: function (error) {
+                alert("Error: " + error);
+            }
+        })
+    }, delayInMilliseconds);
+</script>-->

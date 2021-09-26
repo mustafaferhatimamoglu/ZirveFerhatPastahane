@@ -1,0 +1,83 @@
+﻿@page
+@model ZirveFerhatPastahane.Pages.B2BSepetModel
+@{
+}
+
+
+sepet onaylama sayfası yapılacaktır
+
+<div style="overflow-y: auto;" class="table-responsive">
+    <table id="table_Kalemler" class="table table-bordered table-hover table-responsive table-striped">
+        <thead><tr><th>Sil</th><th>Ürün adı</th><th>Birim</th><th>Miktar</th></tr></thead>
+        @{
+            string UserID = Request.Cookies["ID"];
+            string SQL = "SELECT TOP (1000) * FROM SEPET";
+            SQL += " where UserID = N'" + UserID + "' order by ID desc ";
+            var sql_cevaptable_Kalemler = Islemler.DB_op.Instance.selectToZP_DT(SQL);
+        }
+        @for (int i = 0; i < sql_cevaptable_Kalemler.Rows.Count; i++)
+        {
+            @*<option value='@sql_cevap.Rows[i]["ITEM_LREF"]' data-value='@sql_cevap.Rows[i]["ITEM_NAME"]'></option>*@
+            <tr>
+                @*<td><a href='javascript:Bayi_Sil(\"" + @sql_cevaptable_Kalemler.Rows[i]["ID"] + "\")' title='Sil'><i class='fa fa-trash-o fa-lg'></i></a></td>
+                    <td><a href='javascript:Bayi_Sil(\"" + @sql_cevaptable_Kalemler.Rows[i]["ID"] + "\")' title='Sil'><i class='fa fa-trash fa-lg'></i></a></td>
+                    <td><a href='javascript:Bayi_Sil(\"" + @sql_cevaptable_Kalemler.Rows[i]["ID"] + "\")' title='Sil'><i class='text-danger fa fa-trash-o fa-lg'></i></a></td>*@
+                <td><a href='javascript:ID_Sil(@sql_cevaptable_Kalemler.Rows[i]["ID"])' title='Sil'><i class='text-danger fa fa-trash fa-lg'></i></a></td>
+                @*<td><a href='javascript:Bayi_Sil(\"" + @sql_cevaptable_Kalemler.Rows[i]["ID"] + "\")' title='Sil'><i class='fa fa-trash-o fa-lg'></i></a></td>*@
+                @*<td>@sql_cevaptable_Kalemler.Rows[i]["ITEM_LREF"]</td>*@
+                <td>@sql_cevaptable_Kalemler.Rows[i]["UrunID"]</td>
+                @*<td>@sql_cevaptable_Kalemler.Rows[i]["ITEM_BREF"]</td>*@
+                <td>@sql_cevaptable_Kalemler.Rows[i]["UrunMik"]</td>
+                <td>
+                    @sql_cevaptable_Kalemler.Rows[i]["UrunBirim"]
+                    <a href='javascript:ID_MikDuzenle(@sql_cevaptable_Kalemler.Rows[i]["ID"])' data-toggle='tooltip' data-placement='top' title='Düzenle'><i class='text-success fa fa-pencil-alt fa-lg'></i></a>
+                </td>
+            </tr>
+        }
+    </table>
+</div>
+
+<hr>
+<button onclick="Kalemlere_Ekle()">Sipariş tamamla</button>
+
+<script>
+    function Kalemlere_Ekle() {
+        ////document.getElementById("demo").innerHTML = "Hello World";
+        ////alert("asd");
+        //var value = $('#urunseciminp').val();
+        ////alert($('#UrunSec [value="' + value + '"]').data('value'));
+        ////var logrefurun = $('#UrunSec [value="' + value + '"]').data('value');
+
+        ////var ITEM_LREF = document.getElementById("UrunSec").value;
+        ////var ITEM_NAME = "yapılandırılmadı";
+        //var ITEM_LREF = $('#UrunSec [value="' + value + '"]').data('value');
+        //var ITEM_NAME = document.getElementById("UrunSec").value;
+        ////var ITEM_BREF =
+        //var ITEM_BNAME = document.getElementById("p1").innerText;
+        ////var ITEM_MIKTAR = document.getElementById("p1").textContent;
+        //var ITEM_MIKTAR = document.getElementById("miktar").value.replace(',', '.');
+
+        ////var n = prompt("Check your number", "Type your number here");
+        //ITEM_MIKTAR = Number(ITEM_MIKTAR);
+        //if (isNaN(ITEM_MIKTAR)) {
+        //    alert("Girilen değeri kontrol edin");
+        //}
+
+
+        //var PE = "asd";//document.getElementById("UrunSec").innerHTML;
+        //var PT = document.getElementById("UrunSec").innerText;
+        //alert(a1+a2+a3);
+        $.ajax({
+            type: 'GET',
+            //data: jQuery.param({ ITEM_LREF: ITEM_LREF, ITEM_NAME: ITEM_NAME, ITEM_BNAME: ITEM_BNAME, ITEM_MIKTAR: ITEM_MIKTAR }),
+            // Note the difference in url (this works if you're actually in Index page)
+            url: '?handler=ProjeOlustur',
+            success: function (data) {
+                window.location.href = data;
+            },
+            error: function (error) {
+                alert("Error: " + error);
+            }
+        })
+    }
+</script>
