@@ -1,5 +1,5 @@
 ﻿@page
-@model ZirveFerhatPastahane.Pages.B2B_6_3Model
+@model ZirveFerhatPastahane.Pages.B2B_6_MalKabul
 @{
 }
 
@@ -56,11 +56,11 @@
     }
 </style>
 
-@{
+@*@{
     var sql_mayali = "select ROW_NUMBER() OVER(ORDER BY ITEMS1.LOGICALREF) AS sira, ITEMS1.LOGICALREF ,ITEMS1.NAME , ITEMS3.NAME as BIRIM , ITEMS3.LOGICALREF as BIRIM_CODE \n" +
                 "from " + Request.Cookies["S_ANA"] + "_ITEMS as ITEMS1," + Request.Cookies["S_ANA"] + "_ITMUNITA as ITEMS2 , " + Request.Cookies["S_ANA"] + "_UNITSETL as ITEMS3 \n" +
         "where ITEMS1.NAME != '' and  ITEMS1.LOGICALREF = ITEMS2.ITEMREF and ITEMS2.UNITLINEREF  = ITEMS3.LOGICALREF \n" +
-        "and ITEMS1.SPECODE2 ='KURUPASTA' and ITEMS2.LINENR = 1 \n";
+        "and ITEMS1.SPECODE2 =N'YAŞPASTA' and ITEMS2.LINENR = 1 \n";
     var sql_cevap_mayali = Islemler.DB_op.Instance.selectToTiger_DT(sql_mayali);
     //var sql_cevap = Islemler.DB_op.Instance.selectToTiger_DT(" select LOGICALREF,CODE,NAME,SPECODE,(select DEFINITION_ from LG_002_SPECODES where LG_002_SPECODES.SPECODE=LG_002_ITEMS.SPECODE and SPETYP1 = 1) as SPECODEname from " + Request.Cookies["S_ANA"] + "_ITEMS where NAME != '' " + Request.Cookies["L_SQL"].Replace("*~", " "));
 }
@@ -74,7 +74,8 @@
     <label id="p1_@sql_cevap_mayali.Rows[i]["sira"]" hidden style="width: 50px;">@sql_cevap_mayali.Rows[i]["BIRIM"]</label>
     <label id="p2_@sql_cevap_mayali.Rows[i]["sira"]" hidden>@sql_cevap_mayali.Rows[i]["BIRIM_CODE"]</label>
     <hr style="margin-top:0.2rem; margin-bottom:0.2rem" />
-}
+}*@
+<input id="Barkod" name="Barkod" style="width: 100px;" type="text" placeholder="Barkod" />
 <style>
     label {
         display: block;
@@ -87,8 +88,27 @@
     }
 </style>
 
-<button onclick="SiparisTamamla()">Siparişi Tamamla</button>
+<button onclick="Barkod_Bilgilerini_Getir()">Barkod_Bilgilerini_Getir</button>
 <script>
+    function Barkod_Bilgilerini_Getir(){
+        var gelen = document.getElementById('Barkod').value;
+       //alert(gelen);
+        $.ajax({
+            type: 'GET',
+            data: jQuery.param({ gelen: gelen }),
+            url: '?handler=BarkodBilgileriniGetir',
+            success: function (data) {
+                window.location.href = data;
+                //window.location.href = '/B2B_6_6';
+            },
+            error: function (error) {
+                alert("Error: " + error);
+            }
+        })
+       // alert("asd");
+    }
+</script>
+@*<script>
     function SiparisTamamla() {
         //alert(@sql_cevap_mayali.Rows.Count);
         var RowCount = @sql_cevap_mayali.Rows.Count;
@@ -142,90 +162,14 @@
             //alert("Hatabit var");
             return;
         }
-        alert("Siparişiniz aktarıldı, bir sonraki ürün bloğuna geçiliyor.")
-        $.ajax({
-            type: 'GET',
-            data: jQuery.param({ gelen: gelen }),
-            url: '?handler=ProjeOlustur',
-            success: function (data) {
-                //window.location.href = data;
-                window.location.href = '/B2B_6_4';
-            },
-            error: function (error) {
-                alert("Error: " + error);
-            }
-        })
-
-    }
-    function SiparisTamamla_old() {
-        alert(@sql_cevap_mayali.Rows.Count);
-        var UrunId = "";
-        var UrunMik = 0;
-        var UrunBirim = "";
-
-        var HataBit = 0;
-
-        var gelen = "";
-        for (var i = 1; i < sayac - 1; i++) {
-            try {
-                //mycars[i]=
-                var a1 = 'urunseciminp_' + i.toString() + '';
-                var a2 = 'miktar_' + i.toString() + '';
-                var a3 = 'p2_' + i.toString() + '';
-
-                //alert(a1);
-                var x1 = document.getElementById('urunseciminp_' + i.toString() + '').value;
-                if (x1 == null || x1 == "" || x1 == " ") {
-                    alert(i.toString() + " Satırda Ürün hatası (Ürün)");
-                    HataBit = 1;
-                    break;
-                }
-                var x2 = document.getElementById('miktar_' + i.toString() + '').value;
-                if (x2 == null || x2 == "" || x2 == " ") {
-                    alert(i.toString() + " Satırda Ürün hatası (miktar_)");
-                    HataBit = 1;
-                    break;
-                }
-                var x3 = document.getElementById('p2_' + i.toString() + '').value;
-                if (x3 == null || x3 == "" || x3 == " ") {
-                    alert(i.toString() + " Satırda Ürün hatası (Birim)");
-                    HataBit = 1;
-                    break;
-                }
-                alert(x1)
-                //-------------------------------------------------------------------
-                ///////////UrunId = x1;
-                var value = $('#urunseciminp_' + i.toString() + '').val();
-                UrunId = $('#UrunSec_' + i.toString() + ' [value="' + value + '"]').data('value');
-                try {
-                    UrunMik = parseInt(x2);
-                } catch (e) {
-                    alert(i.toString() + " Satırda Ürün hatası (miktar)");
-                    HataBit = 1;
-                }
-                //UrunBirim = x3;
-                var valueBirim = $('#p2_' + i.toString() + '').val();
-                UrunBirim = $('#p1_' + i.toString() + ' [value="' + valueBirim + '"]').data('value');
-
-                gelen += UrunId + "~~" + UrunMik.toString() + "~~" + UrunBirim + "-~-";
-
-
-            } catch (error) {
-                console.error(error);
-                return;
-            }
-
-        }
-        if (HataBit == 1) {
-            //alert("Hatabit var");
-            return;
-        }
+        alert("Siparişiniz aktarıldı, Son Ürün grubu çıkış sayfasına yönlendiriliyor")
         $.ajax({
             type: 'GET',
             data: jQuery.param({ gelen: gelen }),
             url: '?handler=ProjeOlustur',
             success: function (data) {
                 window.location.href = data;
+                //window.location.href = '/B2B_6_6';
             },
             error: function (error) {
                 alert("Error: " + error);
@@ -233,4 +177,5 @@
         })
 
     }
-</script>
+    
+</script>*@
