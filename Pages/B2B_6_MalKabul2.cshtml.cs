@@ -26,6 +26,7 @@ namespace ZirveFerhatPastahane.Pages
 
             return Content("/B2B_6_MalKabul2?gelen="+gelen);
         }
+        public static string docode_gelen = null;
         public IActionResult OnGetProjeOlustur(string gelen)
         {
             var Data = gelen.Split("-~-");
@@ -35,14 +36,24 @@ namespace ZirveFerhatPastahane.Pages
             string ClientRef = Islemler.DB_op.Instance.selectToZP("select L_SQL from USERS where ID = " + UserID);
             //string ITEM_BREF = Request.Cookies["ITEM_BREF"];
 
-            string SQL = "DECLARE @Seed2 VARCHAR(16) =  isnull ((select MAX(FICHENO) from " + Request.Cookies["S_ALT"] + "_ORFICHE where FICHENO like 'B3B%'),'B3B0000000000000') DECLARE @IncrementedValue2 BIGINT = CONVERT(BIGINT,CONVERT(BIGINT, substring(@Seed2,4,LEN(@Seed2)-1)))+ 1 DECLARE @Seed3 VARCHAR(16) =  CONVERT(varchar, substring(@Seed2,1,3)) + SUBSTRING('0000000000000',1, 13 - LEN(convert(varchar,@IncrementedValue2))) + Convert(varchar,@IncrementedValue2) \n";
+            //string SQL = "DECLARE @Seed2 VARCHAR(16) =  isnull ((select MAX(FICHENO) from " + Request.Cookies["S_ALT"] + "_ORFICHE where FICHENO like 'B3B%'),'B3B0000000000000') DECLARE @IncrementedValue2 BIGINT = CONVERT(BIGINT,CONVERT(BIGINT, substring(@Seed2,4,LEN(@Seed2)-1)))+ 1 DECLARE @Seed3 VARCHAR(16) =  CONVERT(varchar, substring(@Seed2,1,3)) + SUBSTRING('0000000000000',1, 13 - LEN(convert(varchar,@IncrementedValue2))) + Convert(varchar,@IncrementedValue2) \n";
+            //SQL += "declare @F_TIME varchar(10) set @F_TIME = FORMAT(GETDATE(),'HH:mm:ss') \n";
+            //SQL += "declare @F_TIME4 int set @F_TIME4 = CAST(SUBSTRING(@F_TIME,1,2) as INT)*16777216 + CAST(SUBSTRING(@F_TIME,4,2) as INT)*65536 + CAST(SUBSTRING(@F_TIME,7,2) as INT)*256  \n";
+
+            //SQL += "insert into " + Request.Cookies["S_ALT"] + "_ORFICHE (TRCODE,FICHENO,STATUS,DATE_,TIME_" +
+            //    ",CLIENTREF) VALUES (1,@Seed3,1,CAST(GETDATE() AS DATE),@F_TIME4" +
+            //    "," + ClientRef + ")  \n";
+            //SQL += "select LOGICALREF from " + Request.Cookies["S_ALT"] + "_ORFICHE where FICHENO = @Seed3 \n";
+            //var gelendocode = Request.QueryString.ToString();
+            //gelendocode = Request.Q
+
+            string SQL = "DECLARE @Seed2 VARCHAR(16) =  isnull ((select MAX(FICHENO) from " + Request.Cookies["S_ALT"] + "_STFICHE where FICHENO like 'B3B%'),'B3B0000000000000') DECLARE @IncrementedValue2 BIGINT = CONVERT(BIGINT,CONVERT(BIGINT, substring(@Seed2,4,LEN(@Seed2)-1)))+ 1 DECLARE @Seed3 VARCHAR(16) =  CONVERT(varchar, substring(@Seed2,1,3)) + SUBSTRING('0000000000000',1, 13 - LEN(convert(varchar,@IncrementedValue2))) + Convert(varchar,@IncrementedValue2) \n";
             SQL += "declare @F_TIME varchar(10) set @F_TIME = FORMAT(GETDATE(),'HH:mm:ss') \n";
             SQL += "declare @F_TIME4 int set @F_TIME4 = CAST(SUBSTRING(@F_TIME,1,2) as INT)*16777216 + CAST(SUBSTRING(@F_TIME,4,2) as INT)*65536 + CAST(SUBSTRING(@F_TIME,7,2) as INT)*256  \n";
 
-            SQL += "insert into " + Request.Cookies["S_ALT"] + "_ORFICHE (TRCODE,FICHENO,STATUS,DATE_,TIME_" +
-                ",CLIENTREF) VALUES (1,@Seed3,1,CAST(GETDATE() AS DATE),@F_TIME4" +
-                "," + ClientRef + ")  \n";
-            SQL += "select LOGICALREF from " + Request.Cookies["S_ALT"] + "_ORFICHE where FICHENO = @Seed3 \n";
+            SQL += "INSERT INTO " + Request.Cookies["S_ALT"] + "_STFICHE (GRPCODE,TRCODE,IOCODE,FICHENO,DATE_,FTIME,DOCODE,DESTINDEX,DESTCOSTGRP,COMPBRANCH,GENEXCTYP,RECSTATUS)" +
+                "VALUES (3,25,2,@Seed3,CAST(GETDATE() AS DATE),@F_TIME4,'"+ docode_gelen + "','" + Request.Cookies["ISYERI"] + "','" + Request.Cookies["ISYERI"] + "','" + Request.Cookies["ISYERI"] + "',3,1) \n";
+            SQL += "select LOGICALREF from " + Request.Cookies["S_ALT"] + "_STFICHE where FICHENO = @Seed3 \n";
             var FisRef = Islemler.DB_op.Instance.selectToTiger(SQL);
 
             for (int i = 0; i < DataCount; i++)
@@ -55,12 +66,16 @@ namespace ZirveFerhatPastahane.Pages
                 var SQL3 = "";
                 SQL3 += "declare @F_TIME varchar(10) set @F_TIME = FORMAT(GETDATE(),'HH:mm:ss') \n";
                 SQL3 += "declare @F_TIME4 int set @F_TIME4 = CAST(SUBSTRING(@F_TIME,1,2) as INT)*16777216 + CAST(SUBSTRING(@F_TIME,4,2) as INT)*65536 + CAST(SUBSTRING(@F_TIME,7,2) as INT)*256  \n";
-                SQL3 += "INSERT INTO " + Request.Cookies["S_ALT"] + "_ORFLINE ([STOCKREF],[ORDFICHEREF],[TRCODE],[AMOUNT],[UOMREF],[LINENO_],[DATE_],[TIME_],[CLIENTREF],[LINETYPE],[CLOSED],[SHIPPEDAMOUNT],DETLINE \n";
+                SQL3 += "INSERT INTO " + Request.Cookies["S_ALT"] + "_STLINE ([STOCKREF],[STFICHEREF],[TRCODE],[AMOUNT],[UOMREF],[DATE_],[CLIENTREF],[LINETYPE],DETLINE,FTIME,DESTINDEX,DESTCOSTGRP,IOCODE \n";
                 SQL3 += ") VALUES \n";
-                SQL3 += "( " + UrunId + "," + FisRef + ",1," + UrunMik + "," + UrunBirim + "," + (i + 1).ToString() + ",CAST(GETDATE() AS DATE),@F_TIME4," + ClientRef + ",0,0,0,0) \n";
+                SQL3 += "( " + UrunId + "," + FisRef + ",25," + UrunMik + "," + UrunBirim + ",CAST(GETDATE() AS DATE)," + ClientRef + ",0,0,@F_TIME4,'" + Request.Cookies["ISYERI"] + "','" + Request.Cookies["ISYERI"] + "',3) \n";
+
+                SQL3 += "INSERT INTO " + Request.Cookies["S_ALT"] + "_STLINE ([STOCKREF],[STFICHEREF],[TRCODE],[AMOUNT],[UOMREF],[DATE_],[CLIENTREF],[LINETYPE],DETLINE,FTIME,SOURCEINDEX,SOURCECOSTGRP,IOCODE \n";
+                SQL3 += ") VALUES \n";
+                SQL3 += "( " + UrunId + "," + FisRef + ",25," + UrunMik + "," + UrunBirim + ",CAST(GETDATE() AS DATE)," + ClientRef + ",0,0,@F_TIME4,'" + Request.Cookies["ISYERI"] + "','" + Request.Cookies["ISYERI"] + "',2) \n";
                 Islemler.DB_op.Instance.selectToTiger(SQL3);
             }
-            return Content("/Siparis_Alinmistir");
+            return Content("/MalKabulTamamla");
 
 
 
