@@ -51,8 +51,18 @@ namespace ZirveFerhatPastahane.Pages
             SQL += "declare @F_TIME varchar(10) set @F_TIME = FORMAT(GETDATE(),'HH:mm:ss') \n";
             SQL += "declare @F_TIME4 int set @F_TIME4 = CAST(SUBSTRING(@F_TIME,1,2) as INT)*16777216 + CAST(SUBSTRING(@F_TIME,4,2) as INT)*65536 + CAST(SUBSTRING(@F_TIME,7,2) as INT)*256  \n";
 
-            SQL += "INSERT INTO " + Request.Cookies["S_ALT"] + "_STFICHE (GRPCODE,TRCODE,IOCODE,FICHENO,DATE_,FTIME,DOCODE,DESTINDEX,DESTCOSTGRP,COMPBRANCH,GENEXCTYP,RECSTATUS)" +
-                "VALUES (3,25,2,@Seed3,CAST(GETDATE() AS DATE),@F_TIME4,'"+ docode_gelen + "','" + Request.Cookies["ISYERI"] + "','" + Request.Cookies["ISYERI"] + "','" + Request.Cookies["ISYERI"] + "',3,1) \n";
+            SQL += "INSERT INTO " + Request.Cookies["S_ALT"] + "_STFICHE (GRPCODE,TRCODE,IOCODE,FICHENO,DATE_,FTIME,DOCODE,SOURCEINDEX,SOURCECOSTGRP,BRANCH, \n" +
+                "GENEXCTYP,RECSTATUS,INVOICEREF,CLIENTREF,RECVREF,ACCOUNTREF,CENTERREF,PRODORDERREF,PORDERFICHENO,SOURCETYPE, \n" +
+                "SOURCEWSREF,SOURCEPOLNREF,DESTTYPE,DESTINDEX,DESTWSREF,DESTPOLNREF,DESTCOSTGRP,FACTORYNR,DEPARTMENT,COMPBRANCH,COMPDEPARTMENT, \n" +
+                "COMPFACTORY,PRODSTAT,DEVIR,CANCELLED,BILLED,ACCOUNTED,UPDCURR,INUSE,INVKIND,ADDDISCOUNTS, \n" +
+                "TOTALDISCOUNTS,TOTALDISCOUNTED,ADDEXPENSES,TOTALEXPENSES,TOTALDEPOZITO,TOTALPROMOTIONS,TOTALVAT,GROSSTOTAL,NETTOTAL,REPORTRATE, \n" +
+                "DOCDATE,DOCTIME,SHIPDATE,SHIPTIME) \n" +
+                "VALUES (3,15,1,@Seed3,CAST(GETDATE() AS DATE),@F_TIME4,'"+ docode_gelen + "','" + Request.Cookies["ISYERI"] + "','" + Request.Cookies["ISYERI"] + "','" + Request.Cookies["ISYERI"] + "', \n" +
+                "3,1,0,0,0,0,0,0,0,0, \n" +
+                "0,0,0,0,0,0,0,0,0,0, \n" +
+                "0,0,0,0,0,0,0,0,0,0, \n" +
+                "0,0,0,0,0,0,0,0,0,1, \n" +
+                "CAST(GETDATE() AS DATE),@F_TIME4,CAST(GETDATE() AS DATE),@F_TIME4) \n";
             SQL += "select LOGICALREF from " + Request.Cookies["S_ALT"] + "_STFICHE where FICHENO = @Seed3 \n";
             var FisRef = Islemler.DB_op.Instance.selectToTiger(SQL);
 
@@ -70,9 +80,9 @@ namespace ZirveFerhatPastahane.Pages
                 SQL3 += ") VALUES \n";
                 SQL3 += "( " + UrunId + "," + FisRef + ",25," + UrunMik + "," + UrunBirim + ",CAST(GETDATE() AS DATE)," + ClientRef + ",0,0,@F_TIME4,'" + Request.Cookies["ISYERI"] + "','" + Request.Cookies["ISYERI"] + "',3) \n";
 
-                SQL3 += "INSERT INTO " + Request.Cookies["S_ALT"] + "_STLINE ([STOCKREF],[STFICHEREF],[TRCODE],[AMOUNT],[UOMREF],[DATE_],[CLIENTREF],[LINETYPE],DETLINE,FTIME,SOURCEINDEX,SOURCECOSTGRP,IOCODE \n";
-                SQL3 += ") VALUES \n";
-                SQL3 += "( " + UrunId + "," + FisRef + ",25," + UrunMik + "," + UrunBirim + ",CAST(GETDATE() AS DATE)," + ClientRef + ",0,0,@F_TIME4,'" + Request.Cookies["ISYERI"] + "','" + Request.Cookies["ISYERI"] + "',2) \n";
+                //SQL3 += "INSERT INTO " + Request.Cookies["S_ALT"] + "_STLINE ([STOCKREF],[STFICHEREF],[TRCODE],[AMOUNT],[UOMREF],[DATE_],[CLIENTREF],[LINETYPE],DETLINE,FTIME,SOURCEINDEX,SOURCECOSTGRP,IOCODE \n";
+                //SQL3 += ") VALUES \n";
+                //SQL3 += "( " + UrunId + "," + FisRef + ",25," + UrunMik + "," + UrunBirim + ",CAST(GETDATE() AS DATE)," + ClientRef + ",0,0,@F_TIME4,'" + Request.Cookies["ISYERI"] + "','" + Request.Cookies["ISYERI"] + "',2) \n";
                 Islemler.DB_op.Instance.selectToTiger(SQL3);
             }
             return Content("/MalKabulTamamla");
